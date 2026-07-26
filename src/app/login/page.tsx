@@ -37,103 +37,116 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div className="w-full max-w-md space-y-10 z-10">
+        <div className="text-center">
+          <h1 className="text-5xl font-black tracking-tighter text-primary drop-shadow-glow">
             COURTSENSE
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
+          </h1>
+          <p className="mt-4 text-sm font-medium text-foreground/50 uppercase tracking-[0.2em]">
+            Precision Evaluation Engine
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="relative block w-full rounded-t-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="relative block w-full rounded-b-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
 
-          {error && (
-            <div className="text-sm text-red-600 text-center">{error}</div>
-          )}
+        <div className="glass-card p-8 rounded-[2.5rem] shadow-2xl border-white/5">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-foreground/50 ml-4 mb-2 block uppercase tracking-wider">Email Address</label>
+                <input
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  required
+                  className="block w-full rounded-2xl border-0 bg-background/50 py-3 px-4 text-foreground ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm"
+                  placeholder="coach@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-foreground/50 ml-4 mb-2 block uppercase tracking-wider">Password</label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="block w-full rounded-2xl border-0 bg-background/50 py-3 px-4 text-foreground ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            </div>
 
-          <div>
+            {error && (
+              <div className="text-xs font-bold text-warning text-center px-4 py-2 bg-warning/10 rounded-xl">{error}</div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
-              className="group relative flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+              className="w-full flex justify-center py-4 px-4 border border-transparent rounded-2xl shadow-glow text-sm font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 focus:outline-none disabled:opacity-50 transition-all active:scale-95"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Authenticating..." : "Access System"}
             </button>
-          </div>
-        </form>
+          </form>
 
-        {/* Testing Bypass (Visible in Production for Demo) */}
-        <div className="mt-6 border-t pt-6 space-y-3">
-          <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Testing & Demo Bypass
-          </p>
-            <button
-              onClick={() => signIn("credentials", { 
-                email: "admin@tvvc.org", 
-                password: "bypass",
-                callbackUrl: "/" 
-              })}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Director
-            </button>
-            <button
-              onClick={() => signIn("credentials", { 
-                email: "evaluator@tvvc.org", 
-                password: "bypass",
-                callbackUrl: "/" 
-              })}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Evaluator
-            </button>
-            <button
-              onClick={() => signIn("credentials", { 
-                email: "checkin@tvvc.org", 
-                password: "bypass",
-                callbackUrl: "/" 
-              })}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Check-in Staff
-            </button>
+          {/* Testing Bypass (Visible in Production for Demo) */}
+          <div className="mt-10 pt-8 border-t border-white/5 space-y-3">
+            <p className="text-center text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em] mb-4">
+              Testing & Demo Bypass
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={async () => {
+                  await signIn("credentials", { 
+                    email: "admin@tvvc.org", 
+                    password: "bypass", 
+                    redirect: false 
+                  });
+                  router.push("/director");
+                  router.refresh();
+                }}
+                className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+              >
+                DIRECTOR
+              </button>
+              <button
+                onClick={async () => {
+                  await signIn("credentials", { 
+                    email: "evaluator@tvvc.org", 
+                    password: "bypass", 
+                    redirect: false 
+                  });
+                  router.push("/evaluate");
+                  router.refresh();
+                }}
+                className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+              >
+                EVALUATOR
+              </button>
+              <button
+                onClick={async () => {
+                  await signIn("credentials", { 
+                    email: "checkin@tvvc.org", 
+                    password: "bypass", 
+                    redirect: false 
+                  });
+                  router.push("/check-in");
+                  router.refresh();
+                }}
+                className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+              >
+                STAFF
+              </button>
+            </div>
           </div>
+        </div>
       </div>
     </div>
   );
