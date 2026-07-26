@@ -4,6 +4,7 @@
 
 ### Security
 - Removed an authentication backdoor: the credentials provider accepted password `"bypass"` for **any** email in the database, skipping password verification entirely. ([src/lib/auth.ts](src/lib/auth.ts))
+- Enforced role-based access on check-in and evaluate routes. Those pages and their server actions previously only checked "is logged in", so any authenticated account — regardless of DIRECTOR / EVALUATOR / CHECK_IN — could reach every section and call every mutating action. Added shared role-group constants ([src/lib/roles.ts](src/lib/roles.ts)) and applied them consistently; the navbar also now only shows links a role can actually use.
 
 ### Demo login
 - Replaced the old bypass buttons on the login screen with one-click demo logins for the seeded Director / Evaluator / Staff accounts. These go through the same real, password-checked sign-in path as a normal login — no special-cased backend logic. ([src/app/login/page.tsx](src/app/login/page.tsx))
