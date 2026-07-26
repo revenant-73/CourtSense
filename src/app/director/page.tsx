@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { PlusCircle, Calendar, Users } from "lucide-react";
+import { PlusCircle, Calendar, Users, UserCog } from "lucide-react";
 
 export default async function DirectorDashboard() {
   const session = await getServerSession(authOptions);
@@ -31,13 +31,22 @@ export default async function DirectorDashboard() {
           </div>
           <p className="text-foreground/40 text-sm font-bold uppercase tracking-[0.2em] ml-4">Organization Oversight</p>
         </div>
-        <Link
-          href="/director/new-session"
-          className="inline-flex items-center px-6 py-4 rounded-2xl shadow-glow text-xs font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 transition-all active:scale-95 self-start sm:self-center"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create Session
-        </Link>
+        <div className="flex gap-3 self-start sm:self-center">
+          <Link
+            href="/director/users"
+            className="inline-flex items-center px-6 py-4 rounded-2xl glass-card border-white/5 hover:border-primary/40 text-xs font-black uppercase tracking-widest text-foreground/70 hover:text-primary transition-all active:scale-95"
+          >
+            <UserCog className="mr-2 h-4 w-4" />
+            Manage Users
+          </Link>
+          <Link
+            href="/director/new-session"
+            className="inline-flex items-center px-6 py-4 rounded-2xl shadow-glow text-xs font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 transition-all active:scale-95"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Create Session
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
