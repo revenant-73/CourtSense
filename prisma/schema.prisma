@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String
+  role          String    @default("EVALUATOR") // DIRECTOR, EVALUATOR, CHECK_IN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  evaluations   Evaluation[]
+  flags         Flag[]
+  sessions      TryoutSession[] @relation("SessionEvaluators")
+}
+
+model TryoutSession {
+  id            String    @id @default(cuid())
+  name          String
+  organization  String
+  date          DateTime
+  ageGroup      String
+  status        String    @default("ACTIVE") // ACTIVE, ARCHIVED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  athletes      Athlete[]
+  evaluators    User[]    @relation("SessionEvaluators")
+}
+
+model Athlete {
+  id                 String    @id @default(cuid())
+  name               String
+  age                Int
+  ageGroup           String
+  positionPreference String
+  athleteNumber      String?   // Assigned at check-in
+  photoUrl           String?
+  checkInStatus      Boolean   @default(false)
+  checkInTime        DateTime?
+  sessionId          String
+  session            TryoutSession @relation(fields: [sessionId], references: [id])
+  evaluations        Evaluation[]
+  flags              Flag[]
+  tags               Tag[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([sessionId, athleteNumber])
+}
+
+model Evaluation {
+  id                      String    @id @default(cuid())
+  athleteId               String
+  athlete                 Athlete   @relation(fields: [athleteId], references: [id])
+  evaluatorId             String
+  evaluator               User      @relation(fields: [evaluatorId], references: [id])
+  
+  // Ecological categories: 0=Not observed, 1=Emerging, 2=Consistently demonstrated, 3=Stood out
+  perceptionScore         Int       @default(0)
+  adaptabilityScore       Int       @default(0)
+  functionalSkillScore    Int       @default(0)
+  engagementScore         Int       @default(0)
+  teamContributionScore   Int       @default(0)
+  learningBehaviorScore   Int       @default(0)
+  
+  notes                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+model Flag {
+  id            String    @id @default(cuid())
+  type          String    // Discuss, Rewatch, Position question, Age-group question, Limited observation, Possible standout, Concern
+  athleteId     String
+  athlete       Athlete   @relation(fields: [athleteId], references: [id])
+  evaluatorId   String
+  evaluator     User      @relation(fields: [evaluatorId], references: [id])
+  note          String?
+  resolved      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Tag {
+  id            String    @id @default(cuid())
+  name          String    // Serving, Serve reception, Attacking, Setting, Blocking, Floor defense, Transition, Out-of-system play, Reading the game, Communication, Athletic movement, Ball control
+  athleteId     String
+  athlete       Athlete   @relation(fields: [athleteId], references: [id])
+  note          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
