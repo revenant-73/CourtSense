@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { LogOut, ClipboardList, UserCheck, LayoutDashboard } from "lucide-react";
+import { CHECK_IN_ROLES, EVALUATE_ROLES } from "@/lib/roles";
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -27,12 +28,16 @@ export default function Navbar() {
                     Director
                   </Link>
                 )}
-                <Link href="/evaluate" className="text-sm font-bold text-foreground/70 hover:text-primary transition-colors">
-                  Evaluate
-                </Link>
-                <Link href="/check-in" className="text-sm font-bold text-foreground/70 hover:text-primary transition-colors">
-                  Check-in
-                </Link>
+                {EVALUATE_ROLES.includes(role) && (
+                  <Link href="/evaluate" className="text-sm font-bold text-foreground/70 hover:text-primary transition-colors">
+                    Evaluate
+                  </Link>
+                )}
+                {CHECK_IN_ROLES.includes(role) && (
+                  <Link href="/check-in" className="text-sm font-bold text-foreground/70 hover:text-primary transition-colors">
+                    Check-in
+                  </Link>
+                )}
               </div>
             </div>
             <div className="flex items-center">
@@ -69,12 +74,16 @@ export default function Navbar() {
               <LayoutDashboard className="h-6 w-6" />
             </Link>
           )}
-          <Link href="/evaluate" className="flex flex-col items-center text-primary active:scale-90 transition-all">
-            <ClipboardList className="h-7 w-7 drop-shadow-glow" />
-          </Link>
-          <Link href="/check-in" className="flex flex-col items-center text-foreground/60 hover:text-primary active:scale-90 transition-all">
-            <UserCheck className="h-6 w-6" />
-          </Link>
+          {EVALUATE_ROLES.includes(role) && (
+            <Link href="/evaluate" className="flex flex-col items-center text-primary active:scale-90 transition-all">
+              <ClipboardList className="h-7 w-7 drop-shadow-glow" />
+            </Link>
+          )}
+          {CHECK_IN_ROLES.includes(role) && (
+            <Link href="/check-in" className="flex flex-col items-center text-foreground/60 hover:text-primary active:scale-90 transition-all">
+              <UserCheck className="h-6 w-6" />
+            </Link>
+          )}
         </div>
       </div>
     </>

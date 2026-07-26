@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, CHECK_IN_ROLES } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import CheckInForm from "@/components/CheckInForm";
 
@@ -12,7 +12,7 @@ export default async function AthleteCheckInFormPage({
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session || !CHECK_IN_ROLES.includes(session.user.role)) {
     redirect("/login");
   }
 

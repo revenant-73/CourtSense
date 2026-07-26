@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, EVALUATE_ROLES } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import EvaluateFilter from "@/components/EvaluateFilter";
 
@@ -12,7 +12,7 @@ export default async function SessionEvaluatePage({
   const { id } = await params;
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session || !EVALUATE_ROLES.includes(session.user.role)) {
     redirect("/login");
   }
 

@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, CHECK_IN_ROLES } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 interface ImportAthlete {
@@ -67,8 +67,8 @@ export async function checkInAthlete(athleteId: string, data: {
   photoUrl?: string;
 }) {
   const session = await getServerSession(authOptions);
-  
-  if (!session) {
+
+  if (!session || !CHECK_IN_ROLES.includes(session.user.role)) {
     throw new Error("Unauthorized");
   }
 
@@ -96,8 +96,8 @@ export async function addWalkInAthlete(sessionId: string, data: {
   photoUrl?: string;
 }) {
   const session = await getServerSession(authOptions);
-  
-  if (!session) {
+
+  if (!session || !CHECK_IN_ROLES.includes(session.user.role)) {
     throw new Error("Unauthorized");
   }
 

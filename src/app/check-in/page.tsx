@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, CHECK_IN_ROLES } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Users, ChevronRight } from "lucide-react";
@@ -8,7 +8,7 @@ import { Calendar, Users, ChevronRight } from "lucide-react";
 export default async function CheckInDashboard() {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session || !CHECK_IN_ROLES.includes(session.user.role)) {
     redirect("/login");
   }
 

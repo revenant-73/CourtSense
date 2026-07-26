@@ -1,0 +1,2 @@
+export const CHECK_IN_ROLES = ["DIRECTOR", "CHECK_IN"];
+export const EVALUATE_ROLES = ["DIRECTOR", "EVALUATOR"];

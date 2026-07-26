@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, EVALUATE_ROLES } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 export async function saveEvaluation(athleteId: string, data: {
@@ -15,8 +15,8 @@ export async function saveEvaluation(athleteId: string, data: {
   notes?: string;
 }) {
   const session = await getServerSession(authOptions);
-  
-  if (!session) {
+
+  if (!session || !EVALUATE_ROLES.includes(session.user.role)) {
     throw new Error("Unauthorized");
   }
 
@@ -44,7 +44,7 @@ export async function saveEvaluation(athleteId: string, data: {
 
 export async function toggleTag(athleteId: string, tagName: string, note?: string) {
   const session = await getServerSession(authOptions);
-  if (!session) throw new Error("Unauthorized");
+  if (!session || !EVALUATE_ROLES.includes(session.user.role)) throw new Error("Unauthorized");
 
   const existing = await db.tag.findFirst({
     where: { athleteId, name: tagName }
@@ -66,7 +66,7 @@ export async function saveFlag(athleteId: string, data: {
   note?: string;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session) throw new Error("Unauthorized");
+  if (!session || !EVALUATE_ROLES.includes(session.user.role)) throw new Error("Unauthorized");
 
   const flag = await db.flag.create({
     data: {

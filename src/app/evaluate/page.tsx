@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, EVALUATE_ROLES } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ClipboardList, Calendar } from "lucide-react";
@@ -8,7 +8,7 @@ import { ClipboardList, Calendar } from "lucide-react";
 export default async function EvaluateDashboard() {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session || !EVALUATE_ROLES.includes(session.user.role)) {
     redirect("/login");
   }
 
