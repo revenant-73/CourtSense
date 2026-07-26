@@ -35,12 +35,12 @@ export default async function SessionCheckInPage({
     <div className="max-w-md mx-auto px-4 py-8 pb-24">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">{tryoutSession.name}</h1>
-          <p className="text-sm text-gray-500">Athlete Check-in</p>
+          <h1 className="text-xl font-bold text-foreground">{tryoutSession.name}</h1>
+          <p className="text-sm text-foreground/40">Athlete Check-in</p>
         </div>
         <Link
           href={`/check-in/sessions/${id}/add`}
-          className="p-2 bg-indigo-600 text-white rounded-full shadow-lg"
+          className="p-2 bg-primary text-white rounded-full shadow-glow"
         >
           <UserPlus className="h-6 w-6" />
         </Link>

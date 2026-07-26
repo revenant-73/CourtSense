@@ -14,10 +14,10 @@ const CATEGORIES = [
 ];
 
 const SCORES = [
-  { value: 0, label: "Not Observed", color: "bg-gray-100 text-gray-600" },
-  { value: 1, label: "Emerging", color: "bg-blue-100 text-blue-700" },
-  { value: 2, label: "Consistent", color: "bg-green-100 text-green-700" },
-  { value: 3, label: "Standout", color: "bg-yellow-100 text-yellow-800" },
+  { value: 0, label: "Not Observed" },
+  { value: 1, label: "Emerging" },
+  { value: 2, label: "Consistent" },
+  { value: 3, label: "Standout" },
 ];
 
 const STANDOUT_TAGS = [

@@ -35,8 +35,8 @@ export default async function SessionDetailsPage({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{tryoutSession.name}</h1>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-500">
+        <h1 className="text-3xl font-bold text-foreground">{tryoutSession.name}</h1>
+        <div className="mt-2 flex flex-wrap gap-4 text-sm text-foreground/40">
           <div className="flex items-center">
             <Calendar className="mr-1.5 h-4 w-4" />
             {new Date(tryoutSession.date).toLocaleDateString()}
@@ -54,24 +54,24 @@ export default async function SessionDetailsPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-lg font-medium text-gray-900">Registered Athletes</h2>
-              <span className="bg-gray-100 text-gray-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+          <div className="glass-card rounded-[2rem] border-white/5 overflow-hidden">
+            <div className="px-4 py-5 sm:px-6 border-b border-white/5 flex justify-between items-center">
+              <h2 className="text-lg font-medium text-foreground">Registered Athletes</h2>
+              <span className="bg-white/5 text-foreground/60 text-xs font-semibold px-2.5 py-0.5 rounded">
                 {tryoutSession.athletes.length} Total
               </span>
             </div>
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-white/5">
               {tryoutSession.athletes.map((athlete) => (
-                <li key={athlete.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+                <li key={athlete.id} className="px-4 py-4 sm:px-6 hover:bg-white/5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 font-bold">
+                      <div className="h-10 w-10 flex-shrink-0 bg-white/10 rounded-full flex items-center justify-center text-foreground/40 font-bold">
                         {athlete.athleteNumber || "?"}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-indigo-600">{athlete.name}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-sm font-medium text-primary">{athlete.name}</div>
+                        <div className="text-xs text-foreground/40">
                           {athlete.age}y | {formatPosition(athlete.positionPreference)}
                         </div>
                       </div>
@@ -80,8 +80,8 @@ export default async function SessionDetailsPage({
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           athlete.checkInStatus
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
+                            ? "bg-success/10 text-success"
+                            : "bg-warning/10 text-warning"
                         }`}
                       >
                         {athlete.checkInStatus ? "Checked In" : "Pending"}
@@ -91,7 +91,7 @@ export default async function SessionDetailsPage({
                 </li>
               ))}
               {tryoutSession.athletes.length === 0 && (
-                <li className="px-4 py-12 text-center text-gray-500 italic">
+                <li className="px-4 py-12 text-center text-foreground/30 italic">
                   No athletes registered yet.
                 </li>
               )}
@@ -100,15 +100,15 @@ export default async function SessionDetailsPage({
         </div>
 
         <div className="space-y-8">
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Actions</h2>
+          <div className="glass-card rounded-[2rem] border-white/5 p-6">
+            <h2 className="text-lg font-medium text-foreground mb-4">Actions</h2>
             <Link
               href={`/director/sessions/${id}/review`}
-              className="w-full inline-flex justify-center items-center py-3 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 mb-4"
+              className="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl shadow-glow text-sm font-medium text-white bg-success hover:bg-success/90 mb-4 transition-colors"
             >
               Go to Review Dashboard
             </Link>
-            <h2 className="text-lg font-medium text-gray-900 mb-4 pt-4 border-t">Import Athletes</h2>
+            <h2 className="text-lg font-medium text-foreground mb-4 pt-4 border-t border-white/5">Import Athletes</h2>
             <ImportAthletes sessionId={id} />
           </div>
         </div>

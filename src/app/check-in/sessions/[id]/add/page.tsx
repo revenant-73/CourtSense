@@ -26,10 +26,10 @@ export default async function AddWalkInPage({
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Add Walk-in Athlete</h1>
-      <p className="text-gray-500 mb-6">{tryoutSession.name}</p>
-      
-      <div className="bg-white border rounded-2xl p-6 shadow-sm">
+      <h1 className="text-2xl font-bold text-foreground mb-2">Add Walk-in Athlete</h1>
+      <p className="text-foreground/40 mb-6">{tryoutSession.name}</p>
+
+      <div className="glass-card rounded-2xl border-white/5 p-6">
         <WalkInForm sessionId={id} />
       </div>
     </div>

@@ -48,8 +48,8 @@ export default async function SessionEvaluatePage({
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pb-24">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{tryoutSession.name}</h1>
-        <p className="text-sm text-gray-500">Select athlete by number to evaluate</p>
+        <h1 className="text-2xl font-bold text-foreground">{tryoutSession.name}</h1>
+        <p className="text-sm text-foreground/50">Select athlete by number to evaluate</p>
       </div>
 
       <EvaluateFilter athletes={sortedAthletes} sessionId={id} />

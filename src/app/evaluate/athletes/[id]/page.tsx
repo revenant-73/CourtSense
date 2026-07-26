@@ -35,18 +35,18 @@ export default async function AthleteEvaluatePage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="sticky top-0 z-20 bg-white border-b px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-background pb-20">
+      <div className="sticky top-0 z-20 glass-card border-b border-white/5 px-4 py-3 flex items-center justify-between rounded-none">
         <div className="flex items-center">
-          <div className="h-10 w-12 bg-indigo-600 text-white font-black rounded-xl flex items-center justify-center mr-3 text-lg">
+          <div className="h-10 w-12 bg-primary text-white font-black rounded-xl flex items-center justify-center mr-3 text-lg shadow-glow">
             {athlete.athleteNumber}
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">{athlete.name}</h1>
-            <p className="text-xs text-gray-500 uppercase tracking-widest">{formatPosition(athlete.positionPreference)}</p>
+            <h1 className="text-lg font-bold text-foreground">{athlete.name}</h1>
+            <p className="text-xs text-foreground/40 uppercase tracking-widest">{formatPosition(athlete.positionPreference)}</p>
           </div>
         </div>
-        <div className="h-12 w-12 bg-gray-200 rounded-xl overflow-hidden shadow-inner">
+        <div className="h-12 w-12 bg-white/5 rounded-xl overflow-hidden shadow-inner">
           {athlete.photoUrl && (
             <img src={athlete.photoUrl} alt="" className="h-full w-full object-cover" />
           )}

@@ -33,44 +33,44 @@ export default function NewSessionPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Create New Tryout Session</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <h1 className="text-2xl font-bold text-foreground mb-6">Create New Tryout Session</h1>
+      <form onSubmit={handleSubmit} className="glass-card rounded-[2rem] border-white/5 p-6 space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Session Name</label>
+          <label className="block text-sm font-medium text-foreground/60">Session Name</label>
           <input
             name="name"
             type="text"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border py-2 px-3"
+            className="mt-1 block w-full rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground text-sm py-2 px-3"
             placeholder="e.g. COURTSENSE 14U Tryouts - Day 1"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Organization</label>
+          <label className="block text-sm font-medium text-foreground/60">Organization</label>
           <input
             name="organization"
             type="text"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border py-2 px-3"
+            className="mt-1 block w-full rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground text-sm py-2 px-3"
             placeholder="e.g. COURTSENSE"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Date</label>
+          <label className="block text-sm font-medium text-foreground/60">Date</label>
           <input
             name="date"
             type="date"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border py-2 px-3"
+            className="mt-1 block w-full rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground text-sm py-2 px-3"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Age Group</label>
+          <label className="block text-sm font-medium text-foreground/60">Age Group</label>
           <input
             name="ageGroup"
             type="text"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border py-2 px-3"
+            className="mt-1 block w-full rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground text-sm py-2 px-3"
             placeholder="e.g. 14U"
           />
         </div>
@@ -78,7 +78,7 @@ export default function NewSessionPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="w-full inline-flex justify-center py-2 px-4 rounded-xl shadow-glow text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none disabled:opacity-50 transition-all"
           >
             {loading ? "Creating..." : "Create Session"}
           </button>

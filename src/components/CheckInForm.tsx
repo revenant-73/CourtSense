@@ -55,11 +55,11 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex flex-col items-center space-y-4">
-        <div className="relative h-48 w-48 bg-gray-100 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+        <div className="relative h-48 w-48 bg-white/5 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden">
           {photo ? (
             <img src={photo} alt="Athlete" className="h-full w-full object-cover" />
           ) : (
-            <Camera className="h-12 w-12 text-gray-500" />
+            <Camera className="h-12 w-12 text-foreground/30" />
           )}
           <input
             type="file"
@@ -69,18 +69,18 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
             onChange={handlePhotoChange}
           />
         </div>
-        <p className="text-sm text-gray-600">Tap to take or upload photo</p>
+        <p className="text-sm text-foreground/40">Tap to take or upload photo</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Assign Athlete Number</label>
-        <p className="text-xs text-gray-500 mb-1">4 digits: [Age Group] + [Player #] (e.g., 1601)</p>
+        <label className="block text-sm font-medium text-foreground/60">Assign Athlete Number</label>
+        <p className="text-xs text-foreground/40 mb-1">4 digits: [Age Group] + [Player #] (e.g., 1601)</p>
         <input
           type="text"
           inputMode="numeric"
           pattern="[0-9]{4}"
           required
-          className="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-3xl text-center font-bold py-4 border"
+          className="mt-1 block w-full rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-3xl text-center font-bold py-4 text-foreground"
           value={athleteNumber}
           onChange={(e) => setAthleteNumber(e.target.value)}
           placeholder="0000"
@@ -90,7 +90,7 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-sm text-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+        className="w-full flex justify-center items-center py-4 px-4 rounded-xl shadow-glow text-lg font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none disabled:opacity-50 transition-all"
       >
         {loading ? (
           "Checking in..."
