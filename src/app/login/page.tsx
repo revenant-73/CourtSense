@@ -98,11 +98,11 @@ export default function LoginPage() {
           </div>
         </form>
 
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-6 border-t pt-6 space-y-3">
-            <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Dev Development Bypass
-            </p>
+        {/* Testing Bypass (Visible in Production for Demo) */}
+        <div className="mt-6 border-t pt-6 space-y-3">
+          <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Testing & Demo Bypass
+          </p>
             <button
               onClick={() => signIn("credentials", { 
                 email: "admin@tvvc.org", 
@@ -134,7 +134,6 @@ export default function LoginPage() {
               Check-in Staff
             </button>
           </div>
-        )}
       </div>
     </div>
   );
