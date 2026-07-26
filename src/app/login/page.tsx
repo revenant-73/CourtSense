@@ -103,42 +103,71 @@ export default function LoginPage() {
             </p>
             <div className="grid grid-cols-3 gap-2">
               <button
+                type="button"
                 onClick={async () => {
-                  await signIn("credentials", { 
-                    email: "admin@tvvc.org", 
-                    password: "bypass", 
-                    redirect: false 
-                  });
-                  router.push("/director");
-                  router.refresh();
+                  console.log("Attempting Director bypass...");
+                  try {
+                    const res = await signIn("credentials", { 
+                      email: "admin@tvvc.org", 
+                      password: "bypass", 
+                      redirect: false 
+                    });
+                    console.log("Bypass result:", res);
+                    if (res?.error) {
+                      setError("Bypass failed: " + res.error);
+                    } else {
+                      window.location.href = "/director";
+                    }
+                  } catch (err) {
+                    console.error("Bypass error:", err);
+                    setError("Bypass crash");
+                  }
                 }}
                 className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
               >
                 DIRECTOR
               </button>
               <button
+                type="button"
                 onClick={async () => {
-                  await signIn("credentials", { 
-                    email: "evaluator@tvvc.org", 
-                    password: "bypass", 
-                    redirect: false 
-                  });
-                  router.push("/evaluate");
-                  router.refresh();
+                  console.log("Attempting Evaluator bypass...");
+                  try {
+                    const res = await signIn("credentials", { 
+                      email: "evaluator@tvvc.org", 
+                      password: "bypass", 
+                      redirect: false 
+                    });
+                    if (res?.error) {
+                      setError("Bypass failed");
+                    } else {
+                      window.location.href = "/evaluate";
+                    }
+                  } catch (err) {
+                    setError("Bypass crash");
+                  }
                 }}
                 className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
               >
                 EVALUATOR
               </button>
               <button
+                type="button"
                 onClick={async () => {
-                  await signIn("credentials", { 
-                    email: "checkin@tvvc.org", 
-                    password: "bypass", 
-                    redirect: false 
-                  });
-                  router.push("/check-in");
-                  router.refresh();
+                  console.log("Attempting Staff bypass...");
+                  try {
+                    const res = await signIn("credentials", { 
+                      email: "checkin@tvvc.org", 
+                      password: "bypass", 
+                      redirect: false 
+                    });
+                    if (res?.error) {
+                      setError("Bypass failed");
+                    } else {
+                      window.location.href = "/check-in";
+                    }
+                  } catch (err) {
+                    setError("Bypass crash");
+                  }
                 }}
                 className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
               >
