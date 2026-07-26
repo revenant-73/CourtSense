@@ -99,22 +99,25 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
   };
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-10 pb-20">
       {/* Standout Tags */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
-          <TagIcon className="h-4 w-4 mr-2" />
-          Standout Skill Tags
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] flex items-center">
+            <TagIcon className="h-3 w-3 mr-2 text-primary" />
+            Standout Indicators
+          </h3>
+          <span className="text-[10px] font-bold text-primary/60">{activeTags.length} active</span>
+        </div>
         <div className="flex flex-wrap gap-2">
           {STANDOUT_TAGS.map(tag => (
             <button
               key={tag}
               onClick={() => handleTagToggle(tag)}
-              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${
                 activeTags.includes(tag) 
-                  ? "bg-indigo-600 text-white shadow-md" 
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-indigo-300"
+                  ? "bg-primary text-white border-primary shadow-glow scale-105" 
+                  : "glass-card text-foreground/60 border-white/5 hover:border-primary/30"
               }`}
             >
               {tag}
@@ -125,28 +128,28 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
 
       {/* Ecological Categories */}
       <section className="space-y-6">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider flex items-center">
-          <Star className="h-4 w-4 mr-2" />
-          Ecological Assessment
+        <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] flex items-center">
+          <Star className="h-3 w-3 mr-2 text-primary" />
+          Ecological Scoring Matrix
         </h3>
         {CATEGORIES.map(cat => (
-          <div key={cat.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="mb-3">
-              <h4 className="font-bold text-gray-900">{cat.label}</h4>
-              <p className="text-xs text-gray-500">{cat.desc}</p>
+          <div key={cat.id} className="glass-card p-6 rounded-[2rem] border-white/5 relative overflow-hidden group">
+            <div className="mb-5 relative z-10">
+              <h4 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">{cat.label}</h4>
+              <p className="text-[10px] text-foreground/40 uppercase tracking-wide mt-1 leading-relaxed">{cat.desc}</p>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-2 relative z-10">
               {SCORES.map(s => (
                 <button
                   key={s.value}
                   onClick={() => setScores({ ...scores, [cat.id]: s.value })}
-                  className={`py-3 px-1 rounded-xl text-[10px] font-bold text-center leading-tight transition-all border-2 ${
+                  className={`py-4 px-1 rounded-2xl text-[9px] font-black uppercase tracking-tighter text-center leading-tight transition-all border-2 ${
                     scores[cat.id] === s.value 
-                      ? "border-indigo-600 shadow-inner" 
-                      : "border-transparent bg-gray-50 text-gray-500"
+                      ? "border-primary bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(99,102,241,0.1)]" 
+                      : "border-transparent bg-background/40 text-foreground/30 hover:bg-white/5"
                   }`}
                 >
-                  <div className={`mx-auto mb-1 h-2 w-2 rounded-full ${s.value > 0 && scores[cat.id] === s.value ? "bg-indigo-600" : "bg-gray-300"}`} />
+                  <div className={`mx-auto mb-2 h-1.5 w-1.5 rounded-full transition-all ${scores[cat.id] === s.value ? "bg-primary shadow-glow scale-125" : "bg-white/10"}`} />
                   {s.label}
                 </button>
               ))}
@@ -157,51 +160,50 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
 
       {/* Notes */}
       <section>
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
-          <MessageSquare className="h-4 w-4 mr-2" />
-          Evaluator Notes
+        <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-4 flex items-center">
+          <MessageSquare className="h-3 w-3 mr-2 text-primary" />
+          Scout Intelligence Notes
         </h3>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Evidence for assessment..."
-          className="w-full h-32 p-4 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none shadow-sm"
+          placeholder="Detailed observation data..."
+          className="w-full h-32 p-5 glass-card rounded-[2rem] border-white/5 focus:ring-2 focus:ring-primary/50 outline-none resize-none text-foreground placeholder:text-foreground/20 transition-all shadow-xl"
         />
       </section>
 
       {/* Actions */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 sticky bottom-8 z-30">
         <button
           onClick={() => setShowFlagModal(true)}
-          className="flex-1 flex items-center justify-center py-4 bg-red-50 text-red-700 rounded-2xl font-bold border border-red-100 hover:bg-red-100 transition-colors"
+          className="flex-1 flex items-center justify-center py-5 glass-card border-warning/20 text-warning rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-warning/10 transition-all active:scale-95"
         >
-          <Flag className="h-5 w-5 mr-2" />
-          Add Flag
+          <Flag className="h-4 w-4 mr-2" />
+          Flag
         </button>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex-1 flex items-center justify-center py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="flex-[2] flex items-center justify-center py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-glow hover:bg-primary/90 disabled:opacity-50 transition-all active:scale-95"
         >
-          {saving ? "Saving..." : <><Check className="h-5 w-5 mr-2" /> Save Draft</>}
+          {saving ? "Transmitting..." : <><Check className="h-4 w-4 mr-2" /> Save Protocol</>}
         </button>
       </div>
 
-      {/* Flag Modal Simplified */}
+      {/* Flag Modal */}
       {showFlagModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6">
-            <h3 className="text-xl font-bold mb-4">Select Flag Type</h3>
-            <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto mb-4">
+        <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-lg flex items-center justify-center p-6">
+          <div className="glass-card rounded-[2.5rem] w-full max-w-sm p-8 border-white/10 shadow-2xl">
+            <h3 className="text-2xl font-black tracking-tight mb-6 text-foreground">Scout Flag</h3>
+            <div className="grid grid-cols-1 gap-2 max-h-72 overflow-y-auto mb-6 pr-2 custom-scrollbar">
               {FLAG_TYPES.map(type => (
                 <button
                   key={type}
                   onClick={async () => {
                     await saveFlag(athlete.id, { type });
                     setShowFlagModal(false);
-                    alert(`Flag added: ${type}`);
                   }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-xl text-gray-700 font-medium"
+                  className="w-full text-left p-4 hover:bg-primary/10 hover:text-primary rounded-2xl text-foreground/60 font-bold text-sm transition-all border border-transparent hover:border-primary/20"
                 >
                   {type}
                 </button>
@@ -209,9 +211,9 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
             </div>
             <button 
               onClick={() => setShowFlagModal(false)}
-              className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold"
+              className="w-full py-4 bg-white/5 text-foreground/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all"
             >
-              Cancel
+              Abort
             </button>
           </div>
         </div>

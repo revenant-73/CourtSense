@@ -22,15 +22,21 @@ export default async function DirectorDashboard() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Director Dashboard</h1>
+    <div className="max-w-7xl mx-auto px-6 py-8 pb-32">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12">
+        <div>
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-1 h-8 bg-primary rounded-full shadow-glow"></div>
+            <h1 className="text-4xl font-black text-foreground tracking-tight">Director Control</h1>
+          </div>
+          <p className="text-foreground/40 text-sm font-bold uppercase tracking-[0.2em] ml-4">Organization Oversight</p>
+        </div>
         <Link
           href="/director/new-session"
-          className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-6 py-4 rounded-2xl shadow-glow text-xs font-black uppercase tracking-widest text-white bg-primary hover:bg-primary/90 transition-all active:scale-95 self-start sm:self-center"
         >
-          <PlusCircle className="mr-2 h-5 w-5" />
-          New Session
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create Session
         </Link>
       </div>
 
@@ -39,42 +45,50 @@ export default async function DirectorDashboard() {
           <Link
             key={s.id}
             href={`/director/sessions/${s.id}`}
-            className="block bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow"
+            className="block glass-card overflow-hidden rounded-[2rem] border-white/5 hover:border-primary/40 transition-all group shadow-xl active:scale-[0.98]"
           >
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 truncate">
-                {s.name}
-              </h3>
-              <div className="mt-2 flex flex-col space-y-2">
-                <div className="flex items-center text-sm text-gray-500">
-                  <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                  {new Date(s.date).toLocaleDateString()}
-                </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Users className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                  {s._count.athletes} Athletes
-                </div>
-                <div className="text-sm text-gray-500">
-                  {s.ageGroup} | {s.organization}
-                </div>
-              </div>
-              <div className="mt-4">
+            <div className="px-8 py-8">
+              <div className="flex justify-between items-start mb-6">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${
                     s.status === "ACTIVE"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
+                      ? "bg-success/10 text-success border-success/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                      : "bg-white/5 text-foreground/30 border-white/5"
                   }`}
                 >
                   {s.status}
+                </span>
+                <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <svg className="w-4 h-4 text-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="9 5l7 7-7 7"></path></svg>
+                </div>
+              </div>
+
+              <h3 className="text-2xl font-black text-foreground group-hover:text-primary transition-colors leading-tight mb-4">
+                {s.name}
+              </h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center text-xs font-bold text-foreground/40 uppercase tracking-wider">
+                  <Calendar className="flex-shrink-0 mr-3 h-4 w-4 text-primary/60" />
+                  {new Date(s.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+                <div className="flex items-center text-xs font-bold text-foreground/40 uppercase tracking-wider">
+                  <Users className="flex-shrink-0 mr-3 h-4 w-4 text-primary/60" />
+                  {s._count.athletes} Athletes
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+                <span className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em]">
+                  {s.ageGroup} | {s.organization}
                 </span>
               </div>
             </div>
           </Link>
         ))}
         {tryoutSessions.length === 0 && (
-          <div className="col-span-full py-12 text-center bg-white rounded-lg border-2 border-dashed border-gray-300">
-            <p className="text-gray-500">No tryout sessions found. Create your first one!</p>
+          <div className="col-span-full py-24 text-center glass-card rounded-[2.5rem] border-dashed">
+            <p className="text-foreground/30 font-black uppercase tracking-widest text-xs">No active tryout data streams</p>
           </div>
         )}
       </div>

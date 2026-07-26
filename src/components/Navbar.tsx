@@ -12,55 +12,71 @@ export default function Navbar() {
   const role = session.user.role;
 
   return (
-    <nav className="bg-white border-b sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <Link href="/" className="flex-shrink-0 flex items-center font-black text-indigo-600 tracking-tighter text-xl">
-              COURTSENSE
-            </Link>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {role === "DIRECTOR" && (
-                <Link href="/director" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900">
-                  Director
+    <>
+      {/* Desktop Top Nav */}
+      <nav className="hidden sm:block glass-card sticky top-0 z-30 border-b-0 m-4 rounded-2xl shadow-2xl">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center space-x-8">
+              <Link href="/" className="font-black text-primary tracking-tighter text-2xl hover:drop-shadow-glow transition-all">
+                COURTSENSE
+              </Link>
+              <div className="flex space-x-6">
+                {role === "DIRECTOR" && (
+                  <Link href="/director" className="text-sm font-bold text-foreground/70 hover:text-primary transition-colors">
+                    Director
+                  </Link>
+                )}
+                <Link href="/evaluate" className="text-sm font-bold text-foreground/70 hover:text-primary transition-colors">
+                  Evaluate
                 </Link>
-              )}
-              <Link href="/evaluate" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">
-                Evaluate
-              </Link>
-              <Link href="/check-in" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">
-                Check-in
-              </Link>
+                <Link href="/check-in" className="text-sm font-bold text-foreground/70 hover:text-primary transition-colors">
+                  Check-in
+                </Link>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={() => signOut()}
+                className="p-2 text-foreground/50 hover:text-warning transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center">
-            <button
-              onClick={() => signOut()}
-              className="p-2 text-gray-400 hover:text-gray-500"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </div>
+        </div>
+      </nav>
+      
+      {/* Mobile Top Header */}
+      <div className="sm:hidden flex justify-between items-center px-6 py-4 sticky top-0 z-30 bg-background/80 backdrop-blur-md">
+        <Link href="/" className="font-black text-primary tracking-tighter text-xl">
+          COURTSENSE
+        </Link>
+        <button
+          onClick={() => signOut()}
+          className="text-foreground/50"
+        >
+          <LogOut className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Mobile Floating Dock */}
+      <div className="sm:hidden fixed bottom-6 left-6 right-6 z-50">
+        <div className="glass-card rounded-3xl flex justify-around items-center py-4 shadow-2xl border border-white/5">
+          {role === "DIRECTOR" && (
+            <Link href="/director" className="flex flex-col items-center text-foreground/60 hover:text-primary active:scale-90 transition-all">
+              <LayoutDashboard className="h-6 w-6" />
+            </Link>
+          )}
+          <Link href="/evaluate" className="flex flex-col items-center text-primary active:scale-90 transition-all">
+            <ClipboardList className="h-7 w-7 drop-shadow-glow" />
+          </Link>
+          <Link href="/check-in" className="flex flex-col items-center text-foreground/60 hover:text-primary active:scale-90 transition-all">
+            <UserCheck className="h-6 w-6" />
+          </Link>
         </div>
       </div>
-      
-      {/* Mobile Bottom Nav */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-3 px-2 z-40 shadow-[0_-1px_10px_rgba(0,0,0,0.05)]">
-        {role === "DIRECTOR" && (
-          <Link href="/director" className="flex flex-col items-center text-gray-500">
-            <LayoutDashboard className="h-6 w-6" />
-            <span className="text-[10px] mt-1">Director</span>
-          </Link>
-        )}
-        <Link href="/evaluate" className="flex flex-col items-center text-indigo-600">
-          <ClipboardList className="h-6 w-6" />
-          <span className="text-[10px] mt-1">Evaluate</span>
-        </Link>
-        <Link href="/check-in" className="flex flex-col items-center text-gray-500">
-          <UserCheck className="h-6 w-6" />
-          <span className="text-[10px] mt-1">Check-in</span>
-        </Link>
-      </div>
-    </nav>
+    </>
   );
 }
