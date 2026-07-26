@@ -4,6 +4,12 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+const DEMO_ACCOUNTS = [
+  { label: "DIRECTOR", email: "admin@tvvc.org", password: "admin123", redirectTo: "/director" },
+  { label: "EVALUATOR", email: "evaluator@tvvc.org", password: "admin123", redirectTo: "/evaluate" },
+  { label: "STAFF", email: "checkin@tvvc.org", password: "admin123", redirectTo: "/check-in" },
+] as const;
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,6 +34,27 @@ export default function LoginPage() {
       } else {
         router.push("/");
         router.refresh();
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (account: (typeof DEMO_ACCOUNTS)[number]) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await signIn("credentials", {
+        email: account.email,
+        password: account.password,
+        redirect: false,
+      });
+      if (res?.error) {
+        setError("Demo login failed");
+      } else {
+        window.location.href = account.redirectTo;
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
@@ -96,85 +123,25 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Testing Bypass (Visible in Production for Demo) */}
-          <div className="mt-10 pt-8 border-t border-white/5 space-y-3">
-            <p className="text-center text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em] mb-4">
-              Testing & Demo Bypass
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  console.log("Attempting Director bypass...");
-                  try {
-                    const res = await signIn("credentials", { 
-                      email: "admin@tvvc.org", 
-                      password: "bypass", 
-                      redirect: false 
-                    });
-                    console.log("Bypass result:", res);
-                    if (res?.error) {
-                      setError("Bypass failed: " + res.error);
-                    } else {
-                      window.location.href = "/director";
-                    }
-                  } catch (err) {
-                    console.error("Bypass error:", err);
-                    setError("Bypass crash");
-                  }
-                }}
-                className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
-              >
-                DIRECTOR
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  console.log("Attempting Evaluator bypass...");
-                  try {
-                    const res = await signIn("credentials", { 
-                      email: "evaluator@tvvc.org", 
-                      password: "bypass", 
-                      redirect: false 
-                    });
-                    if (res?.error) {
-                      setError("Bypass failed");
-                    } else {
-                      window.location.href = "/evaluate";
-                    }
-                  } catch (err) {
-                    setError("Bypass crash");
-                  }
-                }}
-                className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
-              >
-                EVALUATOR
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  console.log("Attempting Staff bypass...");
-                  try {
-                    const res = await signIn("credentials", { 
-                      email: "checkin@tvvc.org", 
-                      password: "bypass", 
-                      redirect: false 
-                    });
-                    if (res?.error) {
-                      setError("Bypass failed");
-                    } else {
-                      window.location.href = "/check-in";
-                    }
-                  } catch (err) {
-                    setError("Bypass crash");
-                  }
-                }}
-                className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
-              >
-                STAFF
-              </button>
+          {process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN === "true" && (
+            <div className="mt-10 pt-8 border-t border-white/5 space-y-3">
+              <p className="text-center text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em] mb-4">
+                Demo Access
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {DEMO_ACCOUNTS.map((account) => (
+                  <button
+                    key={account.label}
+                    type="button"
+                    onClick={() => handleDemoLogin(account)}
+                    className="py-3 px-1 rounded-xl text-[10px] font-bold text-foreground/60 bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+                  >
+                    {account.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

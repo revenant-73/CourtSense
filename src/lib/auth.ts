@@ -25,21 +25,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
-        // Testing bypass (Active in Production for demo)
-        if (credentials.password === "bypass") {
-          const devUser = await db.user.findUnique({
-            where: { email: credentials.email },
-          });
-          if (devUser) {
-            return {
-              id: devUser.id,
-              email: devUser.email,
-              name: devUser.name,
-              role: devUser.role,
-            };
-          }
-        }
-
         const user = await db.user.findUnique({
           where: {
             email: credentials.email,

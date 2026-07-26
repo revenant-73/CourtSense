@@ -14,8 +14,7 @@ async function main() {
   const prisma = new PrismaClient({ adapter: adapter as any });
 
   const hashedPassword = await bcrypt.hash("admin123", 10);
-  const bypassPassword = await bcrypt.hash("bypass", 10); // For development
-  
+
   // Seed Users
   const admin = await prisma.user.upsert({
     where: { email: "admin@tvvc.org" },
