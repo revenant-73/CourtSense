@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import ImportAthletes from "@/components/ImportAthletes";
+import DeleteSessionButton from "@/components/DeleteSessionButton";
 import { Calendar, Users, MapPin } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
 
@@ -110,6 +111,15 @@ export default async function SessionDetailsPage({
             </Link>
             <h2 className="text-lg font-medium text-foreground mb-4 pt-4 border-t border-white/5">Import Athletes</h2>
             <ImportAthletes sessionId={id} />
+          </div>
+
+          <div className="glass-card rounded-[2rem] border-white/5 p-6">
+            <h2 className="text-lg font-medium text-warning mb-4">Danger Zone</h2>
+            <DeleteSessionButton
+              sessionId={id}
+              sessionName={tryoutSession.name}
+              athleteCount={tryoutSession.athletes.length}
+            />
           </div>
         </div>
       </div>
