@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-08-02
+
+### Bug fixes
+- Fixed a data-integrity bug where `saveEvaluation` could create duplicate evaluation rows for the same athlete/evaluator on rapid saves. Added a real `@@unique([athleteId, evaluatorId])` constraint and switched to a proper upsert. ([src/app/actions/evaluation.ts](src/app/actions/evaluation.ts))
+- Fixed the Director review dashboard's "Avg" column, which was only averaging `adaptabilityScore` instead of all 6 scoring categories — directors were seeing one category mislabeled as an athlete's overall score. ([src/components/DirectorReviewFilter.tsx](src/components/DirectorReviewFilter.tsx))
+- Fixed check-in photo uploads failing in production with "Body exceeded 1 MB limit" — raw camera photos are now compressed client-side before upload. ([src/lib/image.ts](src/lib/image.ts))
+
+### New features
+- Added a Director-only athlete detail page showing every evaluator's individual scores, notes, tags, and flags for an athlete — this is what the review dashboard's "View" button now opens (previously did nothing). ([src/app/director/athletes/[id]/page.tsx](src/app/director/athletes/%5Bid%5D/page.tsx))
+- Directors can now delete a tryout session (and all its athletes/evaluations/tags/flags) from the session detail page's Danger Zone. ([src/components/DeleteSessionButton.tsx](src/components/DeleteSessionButton.tsx))
+- Added `prisma/seed-director.ts` to bootstrap a single real Director account in production without the demo/fake data the regular seed script creates.
+
+### UI/UX
+- Cut the evaluation page's scroll height by roughly a third and added a back arrow to return to the athlete roster (there was previously no way to leave a single evaluation without browser back).
+- Moved the mobile role-switch links (Director/Evaluate/Check-in) into the top bar, replacing the floating bottom dock on every page.
+- Renamed "Save Protocol" to "Save" and "Scout Intelligence Notes" to "Evaluator Notes".
+
+### Cleanup
+- Fixed all 8 ESLint errors (mostly unnecessary `any` types; one genuine cross-package type mismatch; a React Compiler immutability error in the login page's demo-login redirect).
+- Replaced the boilerplate README with real setup/deploy docs, added `.env.example`, and wired `prisma migrate deploy` into the Vercel build command.
+
 ## 2026-07-26
 
 ### Security
