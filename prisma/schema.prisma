@@ -71,6 +71,8 @@ model Evaluation {
   notes                   String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
+
+  @@unique([athleteId, evaluatorId])
 }
 
 model Flag {

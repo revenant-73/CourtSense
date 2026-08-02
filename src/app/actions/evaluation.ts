@@ -24,9 +24,7 @@ export async function saveEvaluation(athleteId: string, data: {
 
   const evaluation = await db.evaluation.upsert({
     where: {
-      id: (await db.evaluation.findFirst({
-        where: { athleteId, evaluatorId: userId }
-      }))?.id || 'new-id',
+      athleteId_evaluatorId: { athleteId, evaluatorId: userId },
     },
     update: {
       ...data,
