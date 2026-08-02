@@ -1,12 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Search, Flag as FlagIcon } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
 
 interface Evaluation {
   id: string;
+  perceptionScore: number;
   adaptabilityScore: number;
+  functionalSkillScore: number;
+  engagementScore: number;
+  teamContributionScore: number;
+  learningBehaviorScore: number;
+}
+
+function evaluationAverage(e: Evaluation) {
+  return (
+    (e.perceptionScore +
+      e.adaptabilityScore +
+      e.functionalSkillScore +
+      e.engagementScore +
+      e.teamContributionScore +
+      e.learningBehaviorScore) /
+    6
+  );
 }
 
 interface Tag {
@@ -127,15 +145,18 @@ export default function DirectorReviewFilter({ athletes }: { athletes: Athlete[]
                 <p className="text-[9px] text-foreground/40 uppercase font-bold">Avg</p>
                 <p className="text-base font-black text-success">
                   {athlete.evaluations.length > 0
-                    ? (athlete.evaluations.reduce((acc: number, e: Evaluation) => acc + e.adaptabilityScore, 0) / athlete.evaluations.length).toFixed(1)
+                    ? (athlete.evaluations.reduce((acc: number, e: Evaluation) => acc + evaluationAverage(e), 0) / athlete.evaluations.length).toFixed(1)
                     : "-"}
                 </p>
               </div>
             </div>
 
-            <button className="px-4 py-2 text-xs font-bold text-foreground/60 bg-white/5 rounded-xl hover:bg-white/10 transition-colors flex-shrink-0">
+            <Link
+              href={`/director/athletes/${athlete.id}`}
+              className="px-4 py-2 text-xs font-bold text-foreground/60 bg-white/5 rounded-xl hover:bg-white/10 transition-colors flex-shrink-0"
+            >
               View
-            </button>
+            </Link>
           </div>
         ))}
       </div>
