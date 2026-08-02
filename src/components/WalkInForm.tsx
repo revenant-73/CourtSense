@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addWalkInAthlete } from "@/app/actions/athlete";
+import { compressImage } from "@/lib/image";
 import { Camera } from "lucide-react";
 
 export default function WalkInForm({ sessionId }: { sessionId: string }) {
@@ -10,14 +11,15 @@ export default function WalkInForm({ sessionId }: { sessionId: string }) {
   const [photo, setPhoto] = useState<string | null>(null);
   const router = useRouter();
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        setPhoto(await compressImage(file));
+      } catch (err) {
+        console.error(err);
+        alert("Failed to process photo");
+      }
     }
   };
 

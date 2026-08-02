@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { checkInAthlete } from "@/app/actions/athlete";
+import { compressImage } from "@/lib/image";
 import { Camera, Check } from "lucide-react";
 
 interface Athlete {
@@ -19,14 +20,15 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        setPhoto(await compressImage(file));
+      } catch (err) {
+        console.error(err);
+        alert("Failed to process photo");
+      }
     }
   };
 
