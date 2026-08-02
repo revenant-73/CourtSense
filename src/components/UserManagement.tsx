@@ -49,8 +49,8 @@ export default function UserManagement({
       form.reset();
       setRole("EVALUATOR");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Failed to create user");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create user");
     } finally {
       setLoading(false);
     }
@@ -61,8 +61,8 @@ export default function UserManagement({
     try {
       await deleteUser(userId);
       router.refresh();
-    } catch (err: any) {
-      alert(err.message || "Failed to delete user");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete user");
     }
   };
 

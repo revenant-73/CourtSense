@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -15,7 +15,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoRedirect, setDemoRedirect] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (demoRedirect) {
+      window.location.href = demoRedirect;
+    }
+  }, [demoRedirect]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +42,7 @@ export default function LoginPage() {
         router.push("/");
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -54,9 +61,9 @@ export default function LoginPage() {
       if (res?.error) {
         setError("Demo login failed");
       } else {
-        window.location.href = account.redirectTo;
+        setDemoRedirect(account.redirectTo);
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);

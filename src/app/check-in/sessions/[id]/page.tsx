@@ -46,7 +46,7 @@ export default async function SessionCheckInPage({
         </Link>
       </div>
 
-      <AthleteListFilter athletes={tryoutSession.athletes} sessionId={id} />
+      <AthleteListFilter athletes={tryoutSession.athletes} />
     </div>
   );
 }

@@ -11,12 +11,12 @@ async function main() {
     authToken: process.env.TURSO_AUTH_TOKEN,
   });
   
-  const prisma = new PrismaClient({ adapter: adapter as any });
+  const prisma = new PrismaClient({ adapter });
 
   const hashedPassword = await bcrypt.hash("admin123", 10);
 
   // Seed Users
-  const admin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: "admin@tvvc.org" },
     update: {},
     create: {
@@ -38,7 +38,7 @@ async function main() {
     },
   });
 
-  const checkin = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: "checkin@tvvc.org" },
     update: {},
     create: {

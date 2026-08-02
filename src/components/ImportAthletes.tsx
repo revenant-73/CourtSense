@@ -41,8 +41,8 @@ export default function ImportAthletes({ sessionId }: { sessionId: string }) {
 
           const res = await importAthletes(sessionId, results.data as ImportData[]);
           setSuccess(res.count);
-        } catch (err: any) {
-          setError(err.message || "Failed to import athletes");
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Failed to import athletes");
         } finally {
           setLoading(false);
         }

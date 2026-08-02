@@ -17,10 +17,8 @@ interface Athlete {
 
 export default function AthleteListFilter({
   athletes,
-  sessionId,
 }: {
   athletes: Athlete[];
-  sessionId: string;
 }) {
   const [search, setSearch] = useState("");
 

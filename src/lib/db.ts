@@ -8,6 +8,6 @@ const adapter = new PrismaLibSql({
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-export const db = globalForPrisma.prisma || new PrismaClient({ adapter: adapter as any });
+export const db = globalForPrisma.prisma || new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
