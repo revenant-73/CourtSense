@@ -58,32 +58,28 @@ export default function Navbar() {
         <Link href="/" className="font-black text-primary tracking-tighter text-xl">
           COURTSENSE
         </Link>
-        <button
-          onClick={() => signOut()}
-          className="text-foreground/50"
-        >
-          <LogOut className="h-5 w-5" />
-        </button>
-      </div>
-
-      {/* Mobile Floating Dock */}
-      <div className="sm:hidden fixed bottom-6 left-6 right-6 z-50">
-        <div className="glass-card rounded-3xl flex justify-around items-center py-4 shadow-2xl border border-white/5">
+        <div className="flex items-center gap-4">
           {role === "DIRECTOR" && (
-            <Link href="/director" className="flex flex-col items-center text-foreground/60 hover:text-primary active:scale-90 transition-all">
-              <LayoutDashboard className="h-6 w-6" />
+            <Link href="/director" className="text-foreground/60 hover:text-primary active:scale-90 transition-all" title="Director">
+              <LayoutDashboard className="h-5 w-5" />
             </Link>
           )}
           {EVALUATE_ROLES.includes(role) && (
-            <Link href="/evaluate" className="flex flex-col items-center text-primary active:scale-90 transition-all">
-              <ClipboardList className="h-7 w-7 drop-shadow-glow" />
+            <Link href="/evaluate" className="text-foreground/60 hover:text-primary active:scale-90 transition-all" title="Evaluate">
+              <ClipboardList className="h-5 w-5" />
             </Link>
           )}
           {CHECK_IN_ROLES.includes(role) && (
-            <Link href="/check-in" className="flex flex-col items-center text-foreground/60 hover:text-primary active:scale-90 transition-all">
-              <UserCheck className="h-6 w-6" />
+            <Link href="/check-in" className="text-foreground/60 hover:text-primary active:scale-90 transition-all" title="Check-in">
+              <UserCheck className="h-5 w-5" />
             </Link>
           )}
+          <button
+            onClick={() => signOut()}
+            className="text-foreground/50"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </>
