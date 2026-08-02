@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions, EVALUATE_ROLES } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import EvaluationForm from "@/components/EvaluationForm";
 import { formatPosition } from "@/lib/utils";
 
@@ -35,9 +37,16 @@ export default async function AthleteEvaluatePage({
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-6">
       <div className="sticky top-0 z-20 glass-card border-b border-white/5 px-4 py-3 flex items-center justify-between rounded-none">
         <div className="flex items-center">
+          <Link
+            href={`/evaluate/sessions/${athlete.sessionId}`}
+            className="h-10 w-10 flex items-center justify-center mr-2 -ml-1 text-foreground/60 hover:text-primary transition-colors"
+            title="Back to athlete list"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
           <div className="h-10 w-12 bg-primary text-white font-black rounded-xl flex items-center justify-center mr-3 text-lg shadow-glow">
             {athlete.athleteNumber}
           </div>
