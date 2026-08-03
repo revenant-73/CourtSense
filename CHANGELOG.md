@@ -19,7 +19,10 @@
 
 ### Cleanup
 - Fixed all 8 ESLint errors (mostly unnecessary `any` types; one genuine cross-package type mismatch; a React Compiler immutability error in the login page's demo-login redirect).
-- Replaced the boilerplate README with real setup/deploy docs, added `.env.example`, and wired `prisma migrate deploy` into the Vercel build command.
+- Replaced the boilerplate README with real setup/deploy docs and added `.env.example`.
+
+### Deploy incident
+- Briefly added `prisma migrate deploy` to the Vercel build command, intending it to apply migrations automatically. It cannot connect to a `libsql://` URL and broke a production deploy (`ERROR` state, ~30 min). Reverted, and added `prisma/apply-turso-migration.ts` as the correct way to apply migrations directly to the Turso production database — see README's Deployment section. The pending `Evaluation` unique-constraint migration was applied to production this way; no duplicate rows existed, so no data was affected.
 
 ## 2026-07-26
 

@@ -69,18 +69,26 @@ npx tsc --noEmit            # type-check
 npx next build               # production build
 ```
 
-**Note:** `prisma migrate dev` requires an interactive terminal and will fail in non-interactive shells. In that case, hand-write the migration SQL under `prisma/migrations/<timestamp>_<name>/migration.sql` and apply it with `npx prisma migrate deploy`.
+**Note:** `prisma migrate dev` requires an interactive terminal and will fail in non-interactive shells. In that case, hand-write the migration SQL under `prisma/migrations/<timestamp>_<name>/migration.sql` and apply it with `npx prisma migrate deploy` (works against the local `file:` database — for the Turso production database, see [Deployment](#deployment)).
 
 If you edit `prisma/schema.prisma` and later hit a `PrismaClientValidationError` for a field/key that *is* in the schema, the dev server is likely serving a stale generated client. Fix: `rm -rf node_modules/@prisma/client && npm install @prisma/client@<version> --no-save && npx prisma generate`, then delete `.next` and restart the dev server.
 
 ## Deployment
 
-Deployed on Vercel (project `court-sense`), backed by a [Turso](https://turso.tech) database in production. `vercel.json` sets the build command to `npx prisma migrate deploy && npx prisma generate && next build`, so pending migrations apply automatically on every deploy.
+Deployed on Vercel (project `court-sense`), backed by a [Turso](https://turso.tech) database in production. `vercel.json`'s build command is `npx prisma generate && next build`.
+
+**Migrations do *not* run automatically on deploy.** `prisma migrate deploy` cannot connect to a `libsql://` URL — its migration engine doesn't recognize the scheme, regardless of the driver adapter PrismaClient uses at runtime. (This was tried once and broke a production deploy; don't add it back to `vercel.json`.) Instead, whenever `prisma/schema.prisma` changes, apply the new migration to the Turso database directly:
+
+```bash
+DATABASE_URL="<turso-url>" TURSO_AUTH_TOKEN="<token>" npx tsx prisma/apply-turso-migration.ts
+```
+
+This applies any migration under `prisma/migrations/` not yet recorded in Turso's `_prisma_migrations` table, and is safe to re-run (it's a no-op once everything's applied).
 
 ### One-time production setup
 
 1. In the Vercel project's environment variables, set `DATABASE_URL` (your Turso `libsql://...` URL), `TURSO_AUTH_TOKEN`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (your production domain), and `NEXT_PUBLIC_SHOW_DEMO_LOGIN` (`"true"` or omit).
-2. Deploy once so the build runs migrations against the new database.
+2. Run `npx tsx prisma/apply-turso-migration.ts` (as above) against the new database, then deploy.
 3. Bootstrap the first real Director account — no fake data, just one real login:
 
    ```bash

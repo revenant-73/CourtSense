@@ -12,7 +12,7 @@ Assessment taken 2026-08-02. Target: fully operational for real tryout use by **
 - Director review dashboard's "Avg" column is a true average across all 6 scoring categories, and its "View" button opens a real per-athlete detail page (all evaluators' individual scores, notes, tags, flags).
 - Director can delete a session (and all its athletes/evaluations/tags/flags) from the session detail page's Danger Zone.
 - `npx eslint .` is down to 0 errors (was 8). Remaining 6 warnings are all `<img>` vs `next/image` perf suggestions, left as-is.
-- Production deploy target is decided: Vercel (`court-sense` project) + Turso. `vercel.json`'s build command runs `prisma migrate deploy` automatically on every deploy. `prisma/seed-director.ts` bootstraps a single real Director account without fake data; `prisma/seed.ts` remains available for demo data. See README's Deployment section for the full one-time setup steps.
+- Production deploy target is decided: Vercel (`court-sense` project) + Turso, already live and confirmed working. `prisma/seed-director.ts` bootstraps a single real Director account without fake data; `prisma/seed.ts` remains available for demo data. `prisma/apply-turso-migration.ts` applies pending migrations to the Turso database (see [Known Dev Gotcha](#known-dev-gotcha) below for why this can't run automatically in the Vercel build). See README's Deployment section for the full one-time setup steps.
 - README replaced with real setup/deploy docs; `.env.example` committed.
 
 ## What Needs Work
@@ -32,6 +32,10 @@ Vercel's runtime error logs showed a real user hitting `Body exceeded 1 MB limit
 ## Known Dev Gotcha
 
 After changing `prisma/schema.prisma`, `npx prisma generate` alone can leave the dev server validating queries against a stale schema (`PrismaClientValidationError: Unknown argument ...` for fields/keys that exist in `schema.prisma`). Root cause: `query_compiler_fast_bg.wasm-base64.js` (what Turbopack actually loads, since it can't `require()` raw `.wasm`) isn't always refreshed by `prisma generate` alongside its `.wasm` sibling. Fix: `rm -rf node_modules/@prisma/client && npm install @prisma/client@<version> --no-save && npx prisma generate`, then delete `.next` and restart the dev server.
+
+## Known Deploy Gotcha
+
+**Never add `prisma migrate deploy` to the Vercel build command.** It cannot connect to a `libsql://` URL — the migration engine's own URL parsing doesn't recognize the scheme (error `P1013`), regardless of the driver adapter PrismaClient uses at runtime. This was tried on 2026-08-02 and broke a production deploy (`ERROR` state) for about 30 minutes before being reverted. Migrations against the Turso production database must be applied directly with `npx tsx prisma/apply-turso-migration.ts` — see README's Deployment section.
 
 ## Suggested Order
 
