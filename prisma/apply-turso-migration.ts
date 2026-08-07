@@ -55,10 +55,15 @@ async function main() {
     const sql = readFileSync(join(migrationsDir, name, "migration.sql"), "utf8");
     console.log(`Applying ${name}...`);
 
-    const statements = sql
+    const withoutComments = sql
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("--"))
+      .join("\n");
+
+    const statements = withoutComments
       .split(";")
       .map((s) => s.trim())
-      .filter((s) => s.length > 0 && !s.startsWith("--"));
+      .filter((s) => s.length > 0);
 
     for (const statement of statements) {
       await client.execute(statement);
