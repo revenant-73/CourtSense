@@ -55,6 +55,7 @@ export default async function DirectorAthleteDetailPage({
         include: { evaluator: true },
         orderBy: { createdAt: "asc" },
       },
+      team: true,
     },
   });
 
@@ -94,6 +95,11 @@ export default async function DirectorAthleteDetailPage({
               #{athlete.athleteNumber}
             </span>
             <h1 className="text-xl font-bold text-foreground truncate">{athlete.name}</h1>
+            {athlete.team && (
+              <span className="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20 flex-shrink-0">
+                {athlete.team.name}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 text-xs text-foreground/50">
             <span className="font-medium">{formatPosition(athlete.positionPreference)}</span>

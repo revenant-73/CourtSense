@@ -105,9 +105,15 @@ export default async function SessionDetailsPage({
             <h2 className="text-lg font-medium text-foreground mb-4">Actions</h2>
             <Link
               href={`/director/sessions/${id}/review`}
-              className="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl shadow-glow text-sm font-medium text-white bg-success hover:bg-success/90 mb-4 transition-colors"
+              className="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl shadow-glow text-sm font-medium text-white bg-success hover:bg-success/90 mb-3 transition-colors"
             >
               Go to Review Dashboard
+            </Link>
+            <Link
+              href={`/director/sessions/${id}/teams`}
+              className="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl text-sm font-medium text-foreground/70 bg-white/5 hover:bg-white/10 mb-4 transition-colors"
+            >
+              Manage Teams
             </Link>
             <h2 className="text-lg font-medium text-foreground mb-4 pt-4 border-t border-white/5">Import Athletes</h2>
             <ImportAthletes sessionId={id} />

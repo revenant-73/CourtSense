@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Search, Flag as FlagIcon } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
+import { assignAthleteTeam } from "@/app/actions/team";
 
 interface Evaluation {
   id: string;
@@ -36,6 +37,11 @@ interface Flag {
   id: string;
 }
 
+interface Team {
+  id: string;
+  name: string;
+}
+
 interface Athlete {
   id: string;
   name: string;
@@ -43,24 +49,46 @@ interface Athlete {
   photoUrl: string | null;
   positionPreference: string;
   ageGroup: string;
+  teamId: string | null;
   evaluations: Evaluation[];
   tags: Tag[];
   flags: Flag[];
 }
 
-export default function DirectorReviewFilter({ athletes }: { athletes: Athlete[] }) {
+export default function DirectorReviewFilter({ athletes, teams }: { athletes: Athlete[]; teams: Team[] }) {
   const [search, setSearch] = useState("");
   const [posFilter, setPosFilter] = useState("All");
   const [tagFilter, setTagFilter] = useState("All");
+  const [teamFilter, setTeamFilter] = useState("All");
+  const [athleteTeams, setAthleteTeams] = useState<Record<string, string | null>>(
+    Object.fromEntries(athletes.map((a) => [a.id, a.teamId]))
+  );
 
   const positions = ["All", ...Array.from(new Set(athletes.map(a => a.positionPreference)))];
   const tags = ["All", "Serving", "Serve reception", "Attacking", "Setting", "Blocking", "Floor defense", "Reading the game"];
+
+  const handleTeamChange = async (athleteId: string, teamId: string) => {
+    const previous = athleteTeams[athleteId];
+    const nextTeamId = teamId === "" ? null : teamId;
+    setAthleteTeams((prev) => ({ ...prev, [athleteId]: nextTeamId }));
+    try {
+      await assignAthleteTeam(athleteId, nextTeamId);
+    } catch (err) {
+      console.error(err);
+      setAthleteTeams((prev) => ({ ...prev, [athleteId]: previous }));
+      alert(err instanceof Error ? err.message : "Failed to assign team");
+    }
+  };
 
   const filteredAthletes = athletes.filter(a => {
     const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase()) || (a.athleteNumber || "").includes(search);
     const matchesPos = posFilter === "All" || a.positionPreference === posFilter;
     const matchesTag = tagFilter === "All" || a.tags.some((t: Tag) => t.name === tagFilter);
-    return matchesSearch && matchesPos && matchesTag;
+    const currentTeamId = athleteTeams[a.id];
+    const matchesTeam =
+      teamFilter === "All" ||
+      (teamFilter === "Unassigned" ? !currentTeamId : currentTeamId === teamFilter);
+    return matchesSearch && matchesPos && matchesTag && matchesTeam;
   });
 
   return (
@@ -91,6 +119,16 @@ export default function DirectorReviewFilter({ athletes }: { athletes: Athlete[]
           onChange={(e) => setTagFilter(e.target.value)}
         >
           {tags.map(t => <option key={t} value={t} className="bg-card">{t}</option>)}
+        </select>
+
+        <select
+          className="rounded-xl px-4 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
+          value={teamFilter}
+          onChange={(e) => setTeamFilter(e.target.value)}
+        >
+          <option value="All" className="bg-card">All Teams</option>
+          <option value="Unassigned" className="bg-card">Unassigned</option>
+          {teams.map(t => <option key={t.id} value={t.id} className="bg-card">{t.name}</option>)}
         </select>
       </div>
 
@@ -150,6 +188,15 @@ export default function DirectorReviewFilter({ athletes }: { athletes: Athlete[]
                 </p>
               </div>
             </div>
+
+            <select
+              className="hidden sm:block rounded-xl px-3 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-xs text-foreground flex-shrink-0 max-w-[140px]"
+              value={athleteTeams[athlete.id] || ""}
+              onChange={(e) => handleTeamChange(athlete.id, e.target.value)}
+            >
+              <option value="" className="bg-card">No team</option>
+              {teams.map(t => <option key={t.id} value={t.id} className="bg-card">{t.name}</option>)}
+            </select>
 
             <Link
               href={`/director/athletes/${athlete.id}`}

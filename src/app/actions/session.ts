@@ -29,6 +29,7 @@ export async function deleteSession(sessionId: string) {
   await db.tag.deleteMany({ where: { athleteId: { in: athleteIds } } });
   await db.flag.deleteMany({ where: { athleteId: { in: athleteIds } } });
   await db.athlete.deleteMany({ where: { sessionId } });
+  await db.team.deleteMany({ where: { sessionId } });
   await db.tryoutSession.delete({ where: { id: sessionId } });
 
   revalidatePath("/director");

@@ -30,6 +30,19 @@ model TryoutSession {
   updatedAt     DateTime  @updatedAt
   athletes      Athlete[]
   evaluators    User[]    @relation("SessionEvaluators")
+  teams         Team[]
+}
+
+model Team {
+  id            String    @id @default(cuid())
+  name          String
+  sessionId     String
+  session       TryoutSession @relation(fields: [sessionId], references: [id])
+  athletes      Athlete[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([sessionId, name])
 }
 
 model Athlete {
@@ -44,6 +57,8 @@ model Athlete {
   checkInTime        DateTime?
   sessionId          String
   session            TryoutSession @relation(fields: [sessionId], references: [id])
+  teamId             String?
+  team               Team?     @relation(fields: [teamId], references: [id])
   evaluations        Evaluation[]
   flags              Flag[]
   tags               Tag[]

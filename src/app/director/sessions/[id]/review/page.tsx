@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
+import { Shirt } from "lucide-react";
 import DirectorReviewFilter from "@/components/DirectorReviewFilter";
 
 export default async function SessionReviewPage({
@@ -30,6 +32,9 @@ export default async function SessionReviewPage({
           },
         },
       },
+      teams: {
+        orderBy: { name: "asc" },
+      },
     },
   });
 
@@ -44,9 +49,16 @@ export default async function SessionReviewPage({
           <h1 className="text-3xl font-bold text-foreground">{tryoutSession.name}</h1>
           <p className="text-foreground/50">Director Review Dashboard</p>
         </div>
+        <Link
+          href={`/director/sessions/${id}/teams`}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-foreground/60 bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <Shirt className="h-4 w-4" />
+          Manage Teams
+        </Link>
       </div>
 
-      <DirectorReviewFilter athletes={tryoutSession.athletes} />
+      <DirectorReviewFilter athletes={tryoutSession.athletes} teams={tryoutSession.teams} />
     </div>
   );
 }
