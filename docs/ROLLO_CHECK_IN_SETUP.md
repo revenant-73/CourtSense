@@ -40,6 +40,18 @@ Use the dedicated profile only for CourtSense. Silent printing applies to any pa
 
 ## Acceptance checklist on the laptop
 
+### Webcam setup in the same check-in profile
+
+Registered-athlete check-in and walk-ins both have Take Photo and Upload Photo. Take Photo requests video access only (no microphone), opens a live preview, and asks for a camera choice on first use. Select the USB webcam by its device label and click Use This Camera. CourtSense remembers its browser device ID in local browser storage, not in the staff account or database. Later Take Photo clicks open that exact camera. Capture Photo takes a JPEG, Retake starts again with the saved camera, and Use Photo attaches the capture to the form. Finish check-in to save it.
+
+Change Camera offers another choice and remembers it only after successfully opening it. If the saved device is unavailable, the app opens an available preview and requires another explicit choice before capture. It never silently substitutes a camera for capture. Cancelling, capturing, or leaving the form stops camera tracks; a late permission response after cancellation is also released. Saving is blocked while a photo is being captured or processed. Upload Photo remains available after cancelling the camera or when access is denied.
+
+Use the dedicated CourtSense browser profile consistently. The preference is separate for another browser, profile, or site address, including preview deployments and localhost. Clearing browser data resets it; permission may need granting again. If browser storage is disabled, the camera choice works for the current capture but cannot be remembered. Open the app over HTTPS (or localhost for development).
+
+On the real laptop, verify first selection, capture/retake/use, saved photo after reloading the athlete, reuse across different athletes and walk-ins, persistence after browser restart, Change Camera, denied permission/upload fallback, and unplug/reconnect recovery. Confirm the Windows camera indicator turns off after capture, Cancel Camera and navigation. Test with the actual USB webcam; the automated component checks use synthetic cameras.
+
+### Printer acceptance checks
+
 - Existing checked-in athlete: one click prints one label, with the saved number, position and name.
 - Newly checked-in athlete and walk-in: the label controls appear only after saving succeeds.
 - Duplicate number or failed save: no print controls for the attempted unsaved record.
@@ -56,7 +68,11 @@ Use disposable test athletes for changes. Do not reset staff passwords or alter 
 
 > Open docs/ROLLO_CHECK_IN_SETUP.md and inspect the current Git branch and deployment. Continue the Windows Rollo 4 × 6 check-in setup. First verify the printer is installed and can print a sample. Inspect scripts/setup-check-in-shortcuts.ps1, create the dedicated Chrome shortcuts, configure printing with a disposable checked-in test athlete, then verify one click prints one physical label and survives a restart. Keep production data and the normal browser profile intact. Do not claim physical printing works until I confirm the printed label. If this feature is not deployed yet, complete local validation and ask me to authorize deployment.
 
+Also verify the remembered USB webcam workflow in this same dedicated profile using the webcam checklist above.
+
 ## Verification before laptop setup
+
+Webcam follow-up: 15 regression tests, TypeScript and production build passed; lint has zero errors and six image warnings (two now belong to the shared camera/photo preview instead of the removed form previews). Isolated Chromium tests rendered the actual camera component with synthetic streams and verified explicit first selection, remembered exact device across reload, capture/retake/use, changing the preference, unavailable-device selection, permission denial, cancellation during pending access, and track cleanup on unmount. Separate client-form tests for registered check-in and walk-ins, with mocked save actions, verified that the camera remains interactive, save stays disabled until Use Photo, the JPEG reaches the save action, the saved confirmation/list link is correct, and the 390px layouts do not overflow. These tests did not access a physical camera or production data; authenticated server round-trip and actual USB hardware verification remain on the laptop checklist.
 
 All 14 existing regression tests passed, TypeScript and production build passed, and lint reported zero errors with the six existing image warnings. The shortcut script passed PowerShell parsing and a temporary-folder execution check; both shortcut targets and arguments were inspected, without launching Chrome or changing desktop shortcuts.
 
@@ -70,3 +86,4 @@ Full browser checks are prepared for saved/reopened check-in, duplicate-number r
 - [Rollo wireless printer and supported label sizes](https://www.rollo.com/product/rollo-wireless-printer/)
 - [Chromium description of kiosk printing](https://issues.chromium.org/issues/494764371)
 - [Browser print dialog behavior](https://developer.mozilla.org/en-US/docs/Web/API/Window/print)
+- [Browser camera selection and permissions](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)

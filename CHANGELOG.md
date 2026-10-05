@@ -2,6 +2,8 @@
 
 ## Check-in label printing — pending production release
 
+- Added shared webcam capture to registered-athlete check-in and walk-ins: explicit first camera selection, remembered browser preference, live preview, capture/retake/use, Change Camera, and upload fallback. Unavailable saved cameras require another explicit choice; permission and busy-camera errors have clear recovery messages. Camera tracks are released on capture, cancellation and unmount; save is blocked during photo work.
+
 - Added saved check-in confirmation with Print Label, Back to Check-in List, and Edit check-in. Existing checked-in athletes can reprint; walk-ins use the same confirmation.
 - Added a print-only portrait 4 × 6-inch label with the saved number, position and name. Printing is separate from saving and does not imply physical delivery.
 - Added a Windows Rollo setup guide, a Codex laptop handoff, and a script that creates dedicated Chrome setup/silent-printing shortcuts without launching Chrome or changing printer settings.

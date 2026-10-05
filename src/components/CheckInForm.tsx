@@ -3,8 +3,8 @@
 import { useState } from "react";
 import CheckInComplete, { type LabelAthlete } from "./CheckInComplete";
 import { checkInAthlete } from "@/app/actions/athlete";
-import { compressImage } from "@/lib/image";
-import { Camera, Check } from "lucide-react";
+import AthletePhoto from "./AthletePhoto";
+import { Check } from "lucide-react";
 
 interface Athlete {
   id: string;
@@ -24,23 +24,9 @@ export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Ath
   const [processingPhoto, setProcessingPhoto] = useState(false);
   const [savedAthlete, setSavedAthlete] = useState<LabelAthlete | null>(athlete.checkInStatus ? athlete : null);
 
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProcessingPhoto(true);
-      try {
-        setPhoto(await compressImage(file));
-      } catch (err) {
-        console.error(err);
-        setError("Could not process this photo. Try a different photo.");
-      } finally {
-        setProcessingPhoto(false);
-      }
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || processingPhoto) return;
     if (!athleteNumber) {
       alert("Please assign an athlete number");
       return;
@@ -68,25 +54,7 @@ export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Ath
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <p role="alert" className="text-warning">{error}</p>}
-      <div className="flex flex-col items-center space-y-4">
-        <div className="relative h-48 w-48 bg-white/5 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden">
-          {photo ? (
-            <img src={photo} alt="Athlete" className="h-full w-full object-cover" />
-          ) : (
-            <Camera className="h-12 w-12 text-foreground/30" />
-          )}
-          <input
-            type="file"
-            aria-label="Athlete photo"
-            disabled={loading}
-            accept="image/*"
-            capture="user"
-            className="absolute inset-0 opacity-0 cursor-pointer"
-            onChange={handlePhotoChange}
-          />
-        </div>
-        <p className="text-sm text-foreground/40">Tap to take or upload photo</p>
-      </div>
+      <AthletePhoto photo={photo} disabled={loading} onPhoto={setPhoto} onBusyChange={setProcessingPhoto} />
 
       <div>
         <label htmlFor="check-in-number" className="block text-sm font-medium text-foreground/80">Assign Athlete Number</label>
@@ -111,7 +79,7 @@ export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Ath
         disabled={loading || processingPhoto}
         className="w-full flex justify-center items-center py-4 px-4 rounded-xl shadow-glow text-lg font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none disabled:opacity-50 transition-all"
       >
-        {processingPhoto ? "Processing photo…" : loading ? (
+        {processingPhoto ? "Finish photo first" : loading ? (
           "Checking in..."
         ) : (
           <>

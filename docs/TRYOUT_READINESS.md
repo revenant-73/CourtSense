@@ -77,6 +77,8 @@ Keep these overrides until upstream manifests accept patched versions. When remo
 
 ### Windows check-in label printing
 
+The same branch now includes remembered webcam selection and shared capture/retake/use controls for registered athletes and walk-ins. Browser component tests with synthetic cameras and mocked client save actions passed; physical USB webcam and saved-photo server round-trip checks remain required on the actual laptop. The camera preference belongs to its browser profile, and unavailable saved cameras require another explicit choice.
+
 The label-printing follow-up adds a saved check-in confirmation, one-label printing and reprinting for registered athletes and walk-ins. It is on `codex/tryout-label-printing`, pending production deployment. See [Rollo check-in setup and laptop handoff](ROLLO_CHECK_IN_SETUP.md) for 4 × 6-inch label settings, dedicated Chrome shortcuts, physical acceptance checks, and a prompt to continue in Codex on the actual laptop. No migration or new dependency is required. Normal browsers show a print dialog; the dedicated laptop profile must be configured and tested for silent printing. Printer delivery is not detectable by the app.
 
 ### Seven workflow improvements — release follow-up

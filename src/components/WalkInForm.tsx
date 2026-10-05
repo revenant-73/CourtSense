@@ -3,8 +3,7 @@
 import { useState } from "react";
 import CheckInComplete, { type LabelAthlete } from "./CheckInComplete";
 import { addWalkInAthlete } from "@/app/actions/athlete";
-import { compressImage } from "@/lib/image";
-import { Camera } from "lucide-react";
+import AthletePhoto from "./AthletePhoto";
 import { POSITIONS } from "@/lib/workflow";
 
 export default function WalkInForm({ sessionId, defaultAgeGroup, suggestedNumber }: { sessionId: string; defaultAgeGroup: string; suggestedNumber: string }) {
@@ -14,23 +13,9 @@ export default function WalkInForm({ sessionId, defaultAgeGroup, suggestedNumber
   const [processingPhoto, setProcessingPhoto] = useState(false);
   const [savedAthlete, setSavedAthlete] = useState<LabelAthlete | null>(null);
 
-  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProcessingPhoto(true);
-      try {
-        setPhoto(await compressImage(file));
-      } catch (err) {
-        console.error(err);
-        setError("Could not process this photo. Try a different photo.");
-      } finally {
-        setProcessingPhoto(false);
-      }
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading || processingPhoto) return;
     setLoading(true);
     setError(null);
 
@@ -61,25 +46,8 @@ export default function WalkInForm({ sessionId, defaultAgeGroup, suggestedNumber
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && <p role="alert" className="text-warning">{error}</p>}
-      <fieldset disabled={loading || processingPhoto} className="space-y-4">
-      <div className="flex flex-col items-center space-y-2 mb-4">
-        <div className="relative h-32 w-32 bg-white/5 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden">
-          {photo ? (
-            <img src={photo} alt="Athlete" className="h-full w-full object-cover" />
-          ) : (
-            <Camera className="h-8 w-8 text-foreground/30" />
-          )}
-          <input
-            type="file"
-            aria-label="Athlete photo"
-            accept="image/*"
-            capture="user"
-            className="absolute inset-0 opacity-0 cursor-pointer"
-            onChange={handlePhotoChange}
-          />
-        </div>
-        <p className="text-xs text-foreground/40">Tap to take photo</p>
-      </div>
+      <fieldset disabled={loading} className="space-y-4">
+      <AthletePhoto photo={photo} disabled={loading} onPhoto={setPhoto} onBusyChange={setProcessingPhoto} />
 
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
@@ -147,7 +115,7 @@ export default function WalkInForm({ sessionId, defaultAgeGroup, suggestedNumber
           disabled={loading || processingPhoto}
           className="w-full inline-flex justify-center py-3 px-4 rounded-xl shadow-glow text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none disabled:opacity-50 transition-all"
         >
-          {processingPhoto ? "Processing photo…" : loading ? "Adding..." : "Add & Check-in"}
+          {processingPhoto ? "Finish photo first" : loading ? "Adding..." : "Add & Check-in"}
         </button>
       </div>
     </form>
