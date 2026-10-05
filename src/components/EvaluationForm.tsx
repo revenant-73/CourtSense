@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
+import { formatPosition } from "@/lib/utils";
 import { saveEvaluation, toggleTag, saveFlag } from "@/app/actions/evaluation";
+import { STANDOUT_TAGS } from "@/lib/workflow";
 import { Star, Flag, MessageSquare, Check, Tag as TagIcon } from "lucide-react";
 
 const CATEGORIES = [
@@ -20,12 +23,6 @@ const SCORES = [
   { value: 3, label: "Standout" },
 ];
 
-const STANDOUT_TAGS = [
-  "Serving", "Serve reception", "Attacking", "Setting", "Blocking", 
-  "Floor defense", "Transition", "Out-of-system play", "Reading the game", 
-  "Communication", "Athletic movement", "Ball control"
-];
-
 const FLAG_TYPES = [
   "Discuss", "Rewatch", "Position question", "Age-group question", 
   "Limited observation", "Possible standout", "Concern"
@@ -33,6 +30,7 @@ const FLAG_TYPES = [
 
 interface Athlete {
   id: string;
+  sessionId: string;
   name: string;
   athleteNumber: string | null;
   positionPreference: string;
@@ -139,9 +137,17 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
 
   return (
     <div className="space-y-5 pb-8">
-      <p role="status" aria-live="polite" className={`text-sm ${saveError ? "text-warning" : "text-foreground/70"}`}>
+      <div className="sticky top-[60px] sm:top-[80px] z-20 bg-background py-3 border-b border-white/10">
+        <Link href={`/evaluate/sessions/${athlete.sessionId}`} className="inline-block text-sm text-foreground/80 mb-2">Back to athlete list</Link>
+        <div className="flex gap-3 items-center">
+          <span className="shrink-0 bg-primary px-3 py-2 rounded-xl font-bold">{athlete.athleteNumber}</span>
+          <div className="min-w-0"><h1 className="text-lg font-bold break-words">{athlete.name}</h1><p className="text-sm text-foreground/80">{formatPosition(athlete.positionPreference)}</p></div>
+          {athlete.photoUrl && <img src={athlete.photoUrl} alt="Athlete" className="h-10 w-10 rounded-xl object-cover shrink-0 ml-auto" />}
+        </div>
+      <p role="status" aria-live="polite" className={`mt-2 text-sm ${saveError ? "text-warning" : "text-foreground/80"}`}>
         {saveError || (saving ? "Saving…" : dirty ? "Unsaved changes — saving shortly" : hasSaved ? "Saved" : "Select scores or add notes to start. Changes save automatically.")}
       </p>
+      </div>
       {indicatorError && <p role="alert" className="text-sm text-warning">{indicatorError}</p>}
       {/* Standout Tags */}
       <section>
@@ -181,9 +187,9 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
           <div key={cat.id} className="glass-card p-3 rounded-2xl border-white/5 relative overflow-hidden group">
             <div className="mb-2 relative z-10">
               <h4 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{cat.label}</h4>
-              <p className="text-[9px] text-foreground/40 uppercase tracking-wide truncate" title={cat.desc}>{cat.desc}</p>
+              <p className="text-xs text-foreground/70 mt-1">{cat.desc}</p>
             </div>
-            <div className="grid grid-cols-4 gap-1.5 relative z-10">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 relative z-10">
               {SCORES.map(s => (
                 <button
                   key={s.value}
@@ -191,10 +197,10 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
                   disabled={saving}
                   aria-pressed={scores[cat.id] === s.value}
                   aria-label={`${cat.label}: ${s.label}`}
-                  className={`py-2 px-1 rounded-xl text-[9px] font-black uppercase tracking-tighter text-center leading-tight transition-all border-2 ${
+                  className={`min-h-12 py-3 px-2 rounded-xl text-sm font-bold text-center leading-tight transition-all border-2 ${
                     scores[cat.id] === s.value
-                      ? "border-primary bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(99,102,241,0.1)]"
-                      : "border-transparent bg-background/40 text-foreground/30 hover:bg-white/5"
+                      ? "border-primary bg-primary text-white"
+                      : "border-white/20 bg-background/40 text-foreground/80 hover:bg-white/5"
                   }`}
                 >
                   <div className={`mx-auto mb-1 h-1.5 w-1.5 rounded-full transition-all ${scores[cat.id] === s.value ? "bg-primary shadow-glow scale-125" : "bg-white/10"}`} />

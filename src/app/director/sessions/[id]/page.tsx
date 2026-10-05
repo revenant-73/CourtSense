@@ -8,6 +8,7 @@ import DeleteSessionButton from "@/components/DeleteSessionButton";
 import ArchiveSessionButton from "@/components/ArchiveSessionButton";
 import { Calendar, Users, MapPin } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
+import { observationSummary } from "@/lib/scoring";
 
 export default async function SessionDetailsPage({
   params,
@@ -26,6 +27,7 @@ export default async function SessionDetailsPage({
     include: {
       athletes: {
         orderBy: { name: "asc" },
+        include: { evaluations: true },
       },
     },
   });
@@ -54,6 +56,16 @@ export default async function SessionDetailsPage({
         </div>
       </div>
 
+      <nav aria-label="Event actions" className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
+        {[["Check-in", `/check-in/sessions/${id}`], ["Evaluate", `/evaluate/sessions/${id}`], ["Review", `/director/sessions/${id}/review`], ["Teams", `/director/sessions/${id}/teams`], ["Export CSV", `/api/sessions/${id}/export`]].map(([label, href]) => (
+          <a key={label} href={href} className="px-4 py-3 rounded-xl bg-white/10 text-center font-semibold">{label}</a>
+        ))}
+      </nav>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8" aria-label="Event progress">
+        {[["Registered", tryoutSession.athletes.length], ["Checked in", tryoutSession.athletes.filter(a => a.checkInStatus).length], ["With observations", tryoutSession.athletes.filter(a => observationSummary(a.evaluations).observed > 0).length], ["Unassigned", tryoutSession.athletes.filter(a => !a.teamId).length]].map(([label, count]) => (
+          <div key={label} className="glass-card p-4 rounded-xl"><p className="text-sm text-foreground/70">{label}</p><p className="text-2xl font-bold">{count}</p></div>
+        ))}
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <div className="glass-card rounded-[2rem] border-white/5 overflow-hidden">
@@ -66,13 +78,13 @@ export default async function SessionDetailsPage({
             <ul className="divide-y divide-white/5">
               {tryoutSession.athletes.map((athlete) => (
                 <li key={athlete.id} className="px-4 py-4 sm:px-6 hover:bg-white/5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center min-w-0 flex-1">
                       <div className="h-10 w-10 flex-shrink-0 bg-white/10 rounded-full flex items-center justify-center text-foreground/40 font-bold">
                         {athlete.athleteNumber || "?"}
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-primary">{athlete.name}</div>
+                      <div className="ml-4 min-w-0">
+                        <div className="text-sm font-medium text-foreground break-words">{athlete.name}</div>
                         <div className="text-xs text-foreground/40">
                           {athlete.age}y | {formatPosition(athlete.positionPreference)}
                         </div>

@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions, CHECK_IN_ROLES } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import WalkInForm from "@/components/WalkInForm";
+import { nextAthleteNumber } from "@/lib/workflow";
+import Link from "next/link";
 
 export default async function AddWalkInPage({
   params,
@@ -18,6 +20,7 @@ export default async function AddWalkInPage({
 
   const tryoutSession = await db.tryoutSession.findUnique({
     where: { id },
+    include: { athletes: { select: { athleteNumber: true } } },
   });
 
   if (!tryoutSession) {
@@ -26,11 +29,12 @@ export default async function AddWalkInPage({
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
+      <Link href={`/check-in/sessions/${id}`} className="block mb-4 text-sm">Back to check-in list</Link>
       <h1 className="text-2xl font-bold text-foreground mb-2">Add Walk-in Athlete</h1>
       <p className="text-foreground/40 mb-6">{tryoutSession.name}</p>
 
       <div className="glass-card rounded-2xl border-white/5 p-6">
-        <WalkInForm sessionId={id} />
+        <WalkInForm sessionId={id} defaultAgeGroup={tryoutSession.ageGroup} suggestedNumber={nextAthleteNumber(tryoutSession.ageGroup, tryoutSession.athletes.map(a => a.athleteNumber))} />
       </div>
     </div>
   );

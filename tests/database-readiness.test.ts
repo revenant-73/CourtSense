@@ -12,6 +12,8 @@ import type { CredentialsConfig } from "next-auth/providers/credentials";
 import type { JWT } from "next-auth/jwt";
 import { importRoster } from "../src/lib/roster";
 import { deleteSessionData } from "../src/lib/session-data";
+import { createWalkIn } from "../src/lib/check-in-data";
+import { assignUnassignedAthletes } from "../src/lib/team-data";
 
 test("isolated SQLite/Turso adapter regression checks", async t => {
   const root = mkdtempSync(join(tmpdir(), "courtsense-readiness-test-"));
@@ -52,6 +54,31 @@ test("isolated SQLite/Turso adapter regression checks", async t => {
       await assert.rejects(requireActiveAthlete(athlete.id), /archived/);
       await db.tryoutSession.update({ where: { id: "session" }, data: { status: "ACTIVE" } });
       await assert.doesNotReject(requireActiveSession("session"));
+    });
+    await t.test("walk-in uniqueness and atomic bulk assignment preserve existing data", async () => {
+      const data = { name: "Walk-in One", age: 16, ageGroup: "16U", positionPreference: "Setter", athleteNumber: "1601" };
+      const one = await createWalkIn(db, "session", data);
+      await assert.rejects(createWalkIn(db, "session", { ...data, name: "Duplicate" }), /already assigned/);
+      await assert.rejects(createWalkIn(db, "session", { ...data, age: 16.5, athleteNumber: "1602" }), /whole number/);
+      assert.equal(await db.athlete.count(), 2);
+      const two = await createWalkIn(db, "session", { ...data, name: "Walk-in Two", athleteNumber: "1602" });
+      const three = await createWalkIn(db, "session", { ...data, name: "Walk-in Three", athleteNumber: "1603" });
+      const first = await db.team.create({ data: { sessionId: "session", name: "Temporary Red" } });
+      const second = await db.team.create({ data: { sessionId: "session", name: "Temporary Blue" } });
+      await assignUnassignedAthletes(db, "session", [one!.id], first.id);
+      await assert.rejects(assignUnassignedAthletes(db, "session", [two!.id, one!.id], second.id), /nothing was assigned/);
+      assert.equal((await db.athlete.findUniqueOrThrow({ where: { id: two!.id } })).teamId, null);
+      assert.equal((await db.athlete.findUniqueOrThrow({ where: { id: one!.id } })).teamId, first.id);
+      await db.tryoutSession.create({ data: { id: "other", name: "Other", organization: "Test", ageGroup: "16U", date: new Date() } });
+      await assert.rejects(assignUnassignedAthletes(db, "other", [two!.id], second.id), /this event/);
+      await db.tryoutSession.update({ where: { id: "session" }, data: { status: "ARCHIVED" } });
+      await assert.rejects(createWalkIn(db, "session", { ...data, athleteNumber: "1604" }), /archived/);
+      await assert.rejects(assignUnassignedAthletes(db, "session", [two!.id], second.id), /archived/);
+      await db.tryoutSession.update({ where: { id: "session" }, data: { status: "ACTIVE" } });
+      assert.equal((await assignUnassignedAthletes(db, "session", [two!.id, three!.id], second.id)).count, 2);
+      await db.athlete.deleteMany({ where: { id: { in: [one!.id, two!.id, three!.id] } } });
+      await db.team.deleteMany({ where: { id: { in: [first.id, second.id] } } });
+      await db.tryoutSession.delete({ where: { id: "other" } });
     });
     const { authOptions } = await import("../src/lib/auth");
     const provider = authOptions.providers[0] as CredentialsConfig;

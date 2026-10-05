@@ -1,211 +1,83 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Check, Users } from "lucide-react";
-import { createTeam, deleteTeam, assignAthleteTeam } from "@/app/actions/team";
+import { createTeam, deleteTeam, assignAthleteTeam, assignSelectedAthletes } from "@/app/actions/team";
 import { formatPosition } from "@/lib/utils";
 
-interface Athlete {
-  id: string;
-  name: string;
-  athleteNumber: string | null;
-  positionPreference: string;
-  ageGroup: string;
-  teamId: string | null;
-}
+interface Athlete { id: string; name: string; athleteNumber: string | null; positionPreference: string; ageGroup: string; teamId: string | null }
+interface Team { id: string; name: string; memberCount: number }
 
-interface Team {
-  id: string;
-  name: string;
-  memberCount: number;
-}
-
-export default function TeamsManager({
-  sessionId,
-  athletes,
-  teams,
-}: {
-  sessionId: string;
-  athletes: Athlete[];
-  teams: Team[];
-}) {
+export default function TeamsManager({ sessionId, athletes, teams }: { sessionId: string; athletes: Athlete[]; teams: Team[] }) {
   const router = useRouter();
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(teams[0]?.id ?? null);
+  const [selectedTeamId, setSelectedTeamId] = useState(teams[0]?.id ?? "");
   const [newTeamName, setNewTeamName] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [athleteTeams, setAthleteTeams] = useState<Record<string, string | null>>(
-    Object.fromEntries(athletes.map((a) => [a.id, a.teamId]))
-  );
+  const [search, setSearch] = useState("");
+  const [position, setPosition] = useState("all");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const selectedTeam = teams.find(t => t.id === selectedTeamId);
+  const roster = athletes.filter(a => a.teamId === selectedTeamId);
+  const unassigned = athletes.filter(a => !a.teamId);
+  const positions = [...new Set(athletes.map(a => formatPosition(a.positionPreference)))].sort();
+  const visible = unassigned.filter(a => (a.name.toLowerCase().includes(search.trim().toLowerCase()) || (a.athleteNumber ?? "").includes(search.trim())) && (position === "all" || formatPosition(a.positionPreference) === position));
+  const selectedIds = selected.filter(id => unassigned.some(a => a.id === id));
 
-  const selectedTeam = teams.find((t) => t.id === selectedTeamId) || null;
-
-  const handleCreateTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTeamName.trim()) return;
-    setCreating(true);
-    setError(null);
+  async function run(action: () => Promise<unknown>, success: string) {
+    if (lock.current) return;
+    lock.current = true; setBusy(true); setError(""); setMessage("");
     try {
-      const team = await createTeam(sessionId, newTeamName.trim());
-      setNewTeamName("");
-      setSelectedTeamId(team.id);
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create team");
-    } finally {
-      setCreating(false);
+      const result = await action();
+      if (typeof result === "object" && result !== null && "error" in result) throw new Error(String(result.error));
+      setSelected([]); setMessage(success); router.refresh();
     }
-  };
+    catch (error) { setError(error instanceof Error ? error.message : "Could not update the roster. Retry."); router.refresh(); }
+    finally { lock.current = false; setBusy(false); }
+  }
 
-  const handleDeleteTeam = async (team: Team) => {
-    if (!confirm(`Delete "${team.name}"? Athletes on this team will become unassigned.`)) return;
-    try {
-      await deleteTeam(team.id);
-      setAthleteTeams((prev) => {
-        const next = { ...prev };
-        for (const id of Object.keys(next)) {
-          if (next[id] === team.id) next[id] = null;
-        }
-        return next;
-      });
-      if (selectedTeamId === team.id) setSelectedTeamId(null);
-      router.refresh();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete team");
-    }
-  };
-
-  const handleToggleAthlete = async (athleteId: string, onTeam: boolean) => {
-    if (!selectedTeamId) return;
-    const previous = athleteTeams[athleteId];
-    const nextTeamId = onTeam ? null : selectedTeamId;
-    setAthleteTeams((prev) => ({ ...prev, [athleteId]: nextTeamId }));
-    try {
-      await assignAthleteTeam(athleteId, nextTeamId);
-    } catch (err) {
-      console.error(err);
-      setAthleteTeams((prev) => ({ ...prev, [athleteId]: previous }));
-      alert(err instanceof Error ? err.message : "Failed to update roster");
-    }
-  };
-
-  const rosterCount = selectedTeamId
-    ? Object.values(athleteTeams).filter((t) => t === selectedTeamId).length
-    : 0;
-
-  return (
-    <div className="space-y-6">
-      <form onSubmit={handleCreateTeam} className="glass-card rounded-2xl border-white/5 p-4 flex flex-col sm:flex-row gap-3">
-        <input
-          type="text"
-          placeholder="New team name (e.g. 16U Red)"
-          className="w-full min-w-0 flex-1 px-4 py-2 rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground placeholder:text-foreground/30"
-          aria-label="New team name"
-          value={newTeamName}
-          onChange={(e) => setNewTeamName(e.target.value)}
-        />
-        <button
-          type="submit"
-          disabled={creating || !newTeamName.trim()}
-          className="inline-flex shrink-0 justify-center items-center gap-2 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Create
-        </button>
-      </form>
-      {error && <p className="text-sm text-warning">{error}</p>}
-
-      {teams.length === 0 ? (
-        <p className="text-sm text-foreground/30 italic glass-card rounded-2xl p-6 text-center">
-          No teams yet. Create one above to start building rosters.
-        </p>
-      ) : (
-        <>
-          <div className="flex flex-wrap gap-2">
-            {teams.map((team) => (
-              <div key={team.id} className="flex items-center">
-                <button
-                  onClick={() => setSelectedTeamId(team.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-l-xl text-sm font-bold transition-all border ${
-                    selectedTeamId === team.id
-                      ? "bg-primary text-white border-primary shadow-glow"
-                      : "glass-card text-foreground/60 border-white/5 hover:border-primary/30"
-                  }`}
-                >
-                  {team.name}
-                  <span className="text-xs opacity-70">
-                    {selectedTeamId === team.id ? rosterCount : team.memberCount}
-                  </span>
-                </button>
-                <button
-                  onClick={() => handleDeleteTeam(team)}
-                  title={`Delete ${team.name}`}
-                  className={`px-2 py-2 rounded-r-xl border border-l-0 transition-all ${
-                    selectedTeamId === team.id
-                      ? "bg-primary border-primary text-white/70 hover:text-white"
-                      : "glass-card border-white/5 text-foreground/30 hover:text-warning"
-                  }`}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {selectedTeam && (
-            <section>
-              <h3 className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-3 flex items-center">
-                <Users className="h-3 w-3 mr-2 text-primary" />
-                {selectedTeam.name} Roster ({rosterCount})
-              </h3>
-              <div className="space-y-2">
-                {athletes.map((athlete) => {
-                  const onTeam = athleteTeams[athlete.id] === selectedTeamId;
-                  return (
-                    <button
-                      key={athlete.id}
-                      onClick={() => handleToggleAthlete(athlete.id, onTeam)}
-                      className={`w-full flex items-center gap-4 p-3 rounded-2xl border transition-all text-left ${
-                        onTeam
-                          ? "bg-primary/10 border-primary/30"
-                          : "glass-card border-white/5 hover:border-primary/20"
-                      }`}
-                    >
-                      <div
-                        className={`h-6 w-6 rounded-lg flex items-center justify-center flex-shrink-0 border-2 transition-all ${
-                          onTeam ? "bg-primary border-primary" : "border-white/20"
-                        }`}
-                      >
-                        {onTeam && <Check className="h-4 w-4 text-white" />}
-                      </div>
-                      <span className="bg-white/5 text-foreground/60 font-black text-xs px-2 py-1 rounded-md flex-shrink-0">
-                        #{athlete.athleteNumber || "?"}
-                      </span>
-                      <span className="flex-1 min-w-0 text-sm font-bold text-foreground truncate">
-                        {athlete.name}
-                      </span>
-                      <span className="text-xs text-foreground/40 flex-shrink-0">
-                        {formatPosition(athlete.positionPreference)} · {athlete.ageGroup}
-                      </span>
-                      {athleteTeams[athlete.id] && athleteTeams[athlete.id] !== selectedTeamId && (
-                        <span className="text-[9px] text-warning/70 font-bold uppercase flex-shrink-0">
-                          On other team
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-                {athletes.length === 0 && (
-                  <p className="text-sm text-foreground/30 italic glass-card rounded-2xl p-6 text-center">
-                    No athletes registered in this session yet.
-                  </p>
-                )}
-              </div>
-            </section>
-          )}
-        </>
-      )}
+  return <div className="space-y-6">
+    <form onSubmit={e => { e.preventDefault(); void run(async () => { const team = await createTeam(sessionId, newTeamName); setSelectedTeamId(team.id); setNewTeamName(""); }, "Team created."); }} className="glass-card rounded-2xl p-4 flex flex-col sm:flex-row gap-3">
+      <input aria-label="New team name" placeholder="New team name (e.g. 16U Red)" value={newTeamName} onChange={e => setNewTeamName(e.target.value)} disabled={busy} className="w-full min-w-0 flex-1 px-4 py-3 bg-card rounded-xl" />
+      <button disabled={busy || !newTeamName.trim()} className="px-4 py-3 bg-primary text-white rounded-xl disabled:opacity-50">Create</button>
+    </form>
+    {error && <p role="alert" className="text-warning">{error}</p>}
+    <p role="status" className="text-sm text-foreground/80">{busy ? "Updating roster…" : message}</p>
+    <div className="flex flex-wrap gap-2">
+      {teams.map(team => <button key={team.id} disabled={busy} aria-pressed={selectedTeamId === team.id} onClick={() => { setSelectedTeamId(team.id); setSelected([]); }} className={`px-4 py-3 rounded-xl border ${selectedTeamId === team.id ? "bg-primary text-white" : "bg-card border-white/20"}`}>{team.name} ({athletes.filter(a => a.teamId === team.id).length})</button>)}
     </div>
-  );
+    {!teams.length && <p className="text-foreground/70">No teams yet. Create one above to start building rosters.</p>}
+    <div className="grid md:grid-cols-2 gap-6">
+      <section className="glass-card rounded-2xl p-4 min-w-0">
+        <h3 className="font-bold text-lg">{selectedTeam ? `${selectedTeam.name} Roster (${roster.length})` : "Choose a team"}</h3>
+        {selectedTeam && <>
+          <p className="text-sm text-foreground/80 my-3">{positions.map(pos => `${pos}: ${roster.filter(a => formatPosition(a.positionPreference) === pos).length}`).join(" · ")}</p>
+          <ul className="space-y-3">{roster.map(a => <li key={a.id} className="rounded-xl bg-white/5 p-3">
+            <p className="font-semibold break-words">#{a.athleteNumber ?? "?"} {a.name}</p><p className="text-sm text-foreground/80">{formatPosition(a.positionPreference)} · {a.ageGroup}</p>
+            <label className="block text-sm mt-2">Move {a.name} to
+              <select aria-label={`Team for ${a.name}`} value={a.teamId ?? ""} disabled={busy} onChange={e => void run(() => assignAthleteTeam(a.id, e.target.value || null), "Assignment saved.")} className="w-full mt-1 p-3 bg-card rounded-xl">
+                <option value="">Unassigned</option>{teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </label>
+          </li>)}</ul>
+          {!roster.length && <p className="text-sm text-foreground/70">Select unassigned athletes to add to this team.</p>}
+          <button disabled={busy} onClick={() => { if (confirm(`Delete "${selectedTeam.name}"? Athletes will become unassigned.`)) void run(async () => { await deleteTeam(selectedTeam.id); setSelectedTeamId(teams.find(t => t.id !== selectedTeam.id)?.id ?? ""); }, "Team deleted; athletes preserved."); }} className="mt-6 p-3 text-warning border border-warning/30 rounded-xl">Delete {selectedTeam.name}</button>
+        </>}
+      </section>
+      <section className="glass-card rounded-2xl p-4 min-w-0">
+        <h3 className="font-bold text-lg">Unassigned ({unassigned.length})</h3>
+        <label className="block text-sm mt-3">Search unassigned athletes<input value={search} onChange={e => setSearch(e.target.value)} className="block w-full mt-1 p-3 rounded-xl bg-card" placeholder="Name or number" /></label>
+        <label className="block text-sm mt-3">Position<select value={position} onChange={e => setPosition(e.target.value)} className="block w-full mt-1 p-3 rounded-xl bg-card"><option value="all">All positions</option>{positions.map(pos => <option key={pos}>{pos}</option>)}</select></label>
+        <p className="text-sm text-foreground/70 my-3">Showing {visible.length} · {selectedIds.length} selected</p>
+        <button disabled={busy || !selectedTeam || !selectedIds.length} onClick={() => void run(() => assignSelectedAthletes(sessionId, selectedIds, selectedTeamId), "Selected athletes assigned.")} className="w-full px-4 py-3 mb-4 rounded-xl bg-primary text-white disabled:opacity-50">Assign selected to {selectedTeam?.name ?? "team"}</button>
+        <ul className="space-y-2">{visible.map(a => <li key={a.id}><label className="flex gap-3 items-start p-3 bg-white/5 rounded-xl">
+          <input type="checkbox" disabled={busy || !selectedTeam} checked={selectedIds.includes(a.id)} onChange={e => setSelected(prev => e.target.checked ? [...prev, a.id] : prev.filter(id => id !== a.id))} className="mt-1 h-5 w-5 shrink-0" />
+          <span className="min-w-0 break-words"><span className="font-semibold">#{a.athleteNumber ?? "?"} {a.name}</span><span className="block text-sm text-foreground/80">{formatPosition(a.positionPreference)} · {a.ageGroup}</span></span>
+        </label></li>)}</ul>
+        {!visible.length && <p className="text-sm text-foreground/70">No unassigned athletes match these filters.</p>}
+      </section>
+    </div>
+  </div>;
 }

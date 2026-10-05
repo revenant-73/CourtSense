@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import type { ImportAthlete } from "@/lib/athlete-import";
 import { importRoster } from "@/lib/roster";
 import { requireActiveAthlete, requireActiveSession } from "@/lib/tryout";
+import { createWalkIn, numberError } from "@/lib/check-in-data";
 
 export async function importAthletes(sessionId: string, athletes: ImportAthlete[]) {
   const session = await getServerSession(authOptions);
@@ -56,6 +57,7 @@ export async function checkInAthlete(athleteId: string, data: {
     throw new Error("Unauthorized");
   }
 
+  try {
   await requireActiveAthlete(athleteId);
   if (!/^\d{4}$/.test(data.athleteNumber)) throw new Error("Assign a four-digit athlete number");
   const athlete = await db.athlete.update({
@@ -66,11 +68,14 @@ export async function checkInAthlete(athleteId: string, data: {
       checkInStatus: true,
       checkInTime: new Date(),
     },
-  });
+  }).catch(error => numberError(error, data.athleteNumber));
 
   revalidatePath(`/check-in/sessions/${athlete.sessionId}`);
   revalidatePath(`/director/sessions/${athlete.sessionId}`);
-  return athlete;
+  return { success: true as const, athlete };
+  } catch (error) {
+    return { success: false as const, error: error instanceof Error && error.constructor === Error ? error.message : "Could not save check-in. Check your connection and retry." };
+  }
 }
 
 export async function addWalkInAthlete(sessionId: string, data: {
@@ -87,23 +92,14 @@ export async function addWalkInAthlete(sessionId: string, data: {
     throw new Error("Unauthorized");
   }
 
+  try {
   await requireActiveSession(sessionId);
-  if (!data.name.trim() || !data.ageGroup.trim() || !data.positionPreference.trim() || !Number.isInteger(data.age) || data.age < 1 || data.age > 99 || !/^\d{4}$/.test(data.athleteNumber)) throw new Error("Provide a name, age (1–99), age group, position, and four-digit number");
-  const athlete = await db.athlete.create({
-    data: {
-      name: data.name.trim(),
-      age: data.age,
-      ageGroup: data.ageGroup.trim(),
-      positionPreference: data.positionPreference.trim(),
-      athleteNumber: data.athleteNumber,
-      photoUrl: data.photoUrl,
-      sessionId,
-      checkInStatus: true,
-      checkInTime: new Date(),
-    },
-  });
+  const athlete = await createWalkIn(db, sessionId, { name: data.name, age: data.age, ageGroup: data.ageGroup, positionPreference: data.positionPreference, athleteNumber: data.athleteNumber, photoUrl: data.photoUrl });
 
   revalidatePath(`/check-in/sessions/${sessionId}`);
   revalidatePath(`/director/sessions/${sessionId}`);
-  return athlete;
+  return { success: true as const, athlete };
+  } catch (error) {
+    return { success: false as const, error: error instanceof Error && error.constructor === Error ? error.message : "Could not add athlete. Check your connection and retry." };
+  }
 }

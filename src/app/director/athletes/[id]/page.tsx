@@ -63,7 +63,7 @@ export default async function DirectorAthleteDetailPage({
         Back to Review Dashboard
       </Link>
 
-      <div className="glass-card rounded-[2rem] border-white/5 p-6 mb-6 flex items-center gap-4">
+      <div className="glass-card rounded-[2rem] border-white/5 p-4 sm:p-6 mb-6 flex flex-wrap items-center gap-4">
         <div className="h-16 w-16 bg-white/5 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center text-foreground/20 font-bold text-2xl">
           {athlete.photoUrl ? (
             <img src={athlete.photoUrl} alt="" className="h-full w-full object-cover" />
@@ -72,11 +72,11 @@ export default async function DirectorAthleteDetailPage({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="bg-primary text-white font-black text-xs px-2 py-1 rounded-md shadow-glow">
               #{athlete.athleteNumber}
             </span>
-            <h1 className="text-xl font-bold text-foreground truncate">{athlete.name}</h1>
+            <h1 className="w-full text-xl font-bold text-foreground break-words">{athlete.name}</h1>
             {athlete.team && (
               <span className="px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-success/10 text-success border border-success/20 flex-shrink-0">
                 {athlete.team.name}

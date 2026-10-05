@@ -76,6 +76,7 @@ export default function Navbar() {
           )}
           <button
             onClick={() => signOut()}
+            aria-label="Sign out"
             className="text-foreground/50"
           >
             <LogOut className="h-5 w-5" />

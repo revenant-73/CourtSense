@@ -40,6 +40,7 @@ export default async function SessionCheckInPage({
         </div>
         <Link
           href={`/check-in/sessions/${id}/add`}
+          aria-label="Add walk-in athlete"
           className="p-2 bg-primary text-white rounded-full shadow-glow"
         >
           <UserPlus className="h-6 w-6" />

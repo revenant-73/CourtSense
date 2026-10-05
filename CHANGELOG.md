@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-05 — Seven workflow improvements
+
+- Added event action shortcuts and registered/check-in/observation/unassigned counts above the roster.
+- Added check-in number search and status filters, actual evaluator observation progress and a needs-observation filter.
+- Improved phone name wrapping and score readability; kept athlete identity and save status together while scrolling.
+- Added labeled review filters for coverage and unresolved flags, all standout choices, result counts and sorting.
+- Added accessible walk-in fields, event defaults, number suggestions and safe inline duplicate-number errors.
+- Added roster/unassigned team views, position counts, and atomic bulk assignment that protects existing assignments.
+- Added regression coverage for empty evaluations, number exhaustion, duplicate walk-ins, archive guards and stale bulk-selection rollback. No schema migration or dependency addition.
+- Verified all seven workflows in the local production-mode browser, including two-browser stale assignment rejection; all 32 phone/tablet/desktop layout checks passed. Fixed the outer scroll container so the evaluation header remains visible. Screenshot evidence is saved in `docs/qa/2026-10-05-workflow`.
+
 ## 2026-10-05
 
 - Released application commit `5f89ed2` to Vercel production; live login, demo rejection, protected-route redirects and anonymous export checks passed. No database migration or seed was run.

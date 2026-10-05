@@ -14,20 +14,25 @@ interface Athlete {
   sessionId: string;
 }
 
-export default function CheckInForm({ athlete }: { athlete: Athlete }) {
-  const [athleteNumber, setAthleteNumber] = useState(athlete.athleteNumber || "");
+export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Athlete; suggestedNumber: string }) {
+  const [athleteNumber, setAthleteNumber] = useState(athlete.athleteNumber || suggestedNumber);
   const [photo, setPhoto] = useState<string | null>(athlete.photoUrl || null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [processingPhoto, setProcessingPhoto] = useState(false);
   const router = useRouter();
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setProcessingPhoto(true);
       try {
         setPhoto(await compressImage(file));
       } catch (err) {
         console.error(err);
-        alert("Failed to process photo");
+        setError("Could not process this photo. Try a different photo.");
+      } finally {
+        setProcessingPhoto(false);
       }
     }
   };
@@ -40,15 +45,17 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
     }
 
     setLoading(true);
+    setError(null);
     try {
-      await checkInAthlete(athlete.id, {
+      const result = await checkInAthlete(athlete.id, {
         athleteNumber,
         photoUrl: photo || undefined,
       });
+      if (!result.success) { setError(result.error); return; }
       router.push(`/check-in/sessions/${athlete.sessionId}`);
     } catch (err) {
       console.error(err);
-      alert("Failed to check in");
+      setError(err instanceof Error ? err.message : "Could not check in. Check your connection and retry.");
     } finally {
       setLoading(false);
     }
@@ -56,6 +63,7 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {error && <p role="alert" className="text-warning">{error}</p>}
       <div className="flex flex-col items-center space-y-4">
         <div className="relative h-48 w-48 bg-white/5 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden">
           {photo ? (
@@ -65,6 +73,8 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
           )}
           <input
             type="file"
+            aria-label="Athlete photo"
+            disabled={loading}
             accept="image/*"
             capture="user"
             className="absolute inset-0 opacity-0 cursor-pointer"
@@ -75,9 +85,12 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground/60">Assign Athlete Number</label>
+        <label htmlFor="check-in-number" className="block text-sm font-medium text-foreground/80">Assign Athlete Number</label>
         <p className="text-xs text-foreground/40 mb-1">4 digits: [Age Group] + [Player #] (e.g., 1601)</p>
         <input
+          id="check-in-number"
+          disabled={loading}
+          maxLength={4}
           type="text"
           inputMode="numeric"
           pattern="[0-9]{4}"
@@ -91,10 +104,10 @@ export default function CheckInForm({ athlete }: { athlete: Athlete }) {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || processingPhoto}
         className="w-full flex justify-center items-center py-4 px-4 rounded-xl shadow-glow text-lg font-bold text-white bg-primary hover:bg-primary/90 focus:outline-none disabled:opacity-50 transition-all"
       >
-        {loading ? (
+        {processingPhoto ? "Processing photo…" : loading ? (
           "Checking in..."
         ) : (
           <>

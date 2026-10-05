@@ -5,6 +5,21 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { requireActiveAthlete, requireActiveSession } from "@/lib/tryout";
+import { assignUnassignedAthletes } from "@/lib/team-data";
+
+export async function assignSelectedAthletes(sessionId: string, athleteIds: string[], teamId: string) {
+  await requireDirector();
+  try {
+  const result = await assignUnassignedAthletes(db, sessionId, athleteIds, teamId);
+  revalidatePath(`/director/sessions/${sessionId}/teams`);
+  revalidatePath(`/director/sessions/${sessionId}/review`);
+  revalidatePath(`/director/sessions/${sessionId}`);
+  for (const id of athleteIds) revalidatePath(`/director/athletes/${id}`);
+  return { success: true as const, count: result.count };
+  } catch (error) {
+    return { success: false as const, error: error instanceof Error && error.constructor === Error ? error.message : "Could not assign athletes. Check your connection and retry." };
+  }
+}
 
 async function requireDirector() {
   const session = await getServerSession(authOptions);

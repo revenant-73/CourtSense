@@ -3,8 +3,21 @@ import assert from "node:assert/strict";
 import { observationSummary, validateScores, type Scores } from "../src/lib/scoring";
 import { validateAthleteImport, athleteImportKey } from "../src/lib/athlete-import";
 import { csvCell, resultsCsv } from "../src/lib/csv";
+import { evaluationProgress, nextAthleteNumber } from "../src/lib/workflow";
 
 const empty: Scores = { perceptionScore: 0, adaptabilityScore: 0, functionalSkillScore: 0, engagementScore: 0, teamContributionScore: 0, learningBehaviorScore: 0 };
+test("evaluation progress distinguishes empty saved records from observed scores", () => {
+  assert.equal(evaluationProgress([]).state, "none");
+  assert.equal(evaluationProgress([empty]).state, "started");
+  assert.equal(evaluationProgress([{ ...empty, perceptionScore: 3 }]).state, "partial");
+  assert.equal(evaluationProgress([Object.fromEntries(Object.keys(empty).map(key => [key, 2])) as Scores]).state, "observed");
+});
+test("suggested numbers skip used numbers without wrapping into another age group", () => {
+  assert.equal(nextAthleteNumber("16U", ["1601", "1603", null]), "1602");
+  assert.equal(nextAthleteNumber("9u", []), "0901");
+  assert.equal(nextAthleteNumber("Varsity", []), "");
+  assert.equal(nextAthleteNumber("16U", Array.from({ length: 99 }, (_, i) => `16${String(i + 1).padStart(2, "0")}`)), "");
+});
 test("unobserved scores never penalize observed results; coverage remains explicit", () => {
   assert.deepEqual(observationSummary([]), { average: null, observed: 0, possible: 0 });
   assert.deepEqual(observationSummary([empty]), { average: null, observed: 0, possible: 6 });

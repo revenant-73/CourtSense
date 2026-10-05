@@ -30,11 +30,11 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#4f46e5" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col antialiased relative overflow-x-hidden`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col antialiased relative overflow-x-clip`}>
         <div className="scan-line" />
         <Providers>
           <Navbar />
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 min-w-0">
             {children}
           </main>
         </Providers>

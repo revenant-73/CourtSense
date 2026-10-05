@@ -6,6 +6,7 @@ import { Search, Flag as FlagIcon } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
 import { assignAthleteTeam } from "@/app/actions/team";
 import { observationSummary } from "@/lib/scoring";
+import { STANDOUT_TAGS, evaluationProgress } from "@/lib/workflow";
 
 interface Evaluation {
   id: string;
@@ -24,6 +25,8 @@ interface Tag {
 
 interface Flag {
   id: string;
+  type: string;
+  resolved: boolean;
 }
 
 interface Team {
@@ -49,12 +52,16 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
   const [posFilter, setPosFilter] = useState("All");
   const [tagFilter, setTagFilter] = useState("All");
   const [teamFilter, setTeamFilter] = useState("All");
+  const [coverageFilter, setCoverageFilter] = useState("all");
+  const [flagFilter, setFlagFilter] = useState("all");
+  const [sort, setSort] = useState("number");
   const [athleteTeams, setAthleteTeams] = useState<Record<string, string | null>>(
     Object.fromEntries(athletes.map((a) => [a.id, a.teamId]))
   );
 
   const positions = ["All", ...Array.from(new Set(athletes.map(a => a.positionPreference)))];
-  const tags = ["All", "Serving", "Serve reception", "Attacking", "Setting", "Blocking", "Floor defense", "Reading the game"];
+  const tags = ["All", ...STANDOUT_TAGS, ...athletes.flatMap(a => a.tags.map(t => t.name)).filter(t => !STANDOUT_TAGS.includes(t))];
+  const flagTypes = Array.from(new Set(athletes.flatMap(a => a.flags.map(f => f.type))));
 
   const handleTeamChange = async (athleteId: string, teamId: string) => {
     const previous = athleteTeams[athleteId];
@@ -77,7 +84,18 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
     const matchesTeam =
       teamFilter === "All" ||
       (teamFilter === "Unassigned" ? !currentTeamId : currentTeamId === teamFilter);
-    return matchesSearch && matchesPos && matchesTag && matchesTeam;
+    const progress = evaluationProgress(a.evaluations);
+    const matchesCoverage = coverageFilter === "all" || (coverageFilter === "missing" ? progress.observed === 0 : progress.observed > 0 && progress.observed < progress.possible);
+    const matchesFlag = flagFilter === "all" || a.flags.some(f => !f.resolved && (flagFilter === "open" || f.type === flagFilter));
+    return matchesSearch && matchesPos && matchesTag && matchesTeam && matchesCoverage && matchesFlag;
+  }).sort((a, b) => {
+    if (sort === "name") return a.name.localeCompare(b.name);
+    if (sort === "average") return (observationSummary(b.evaluations).average ?? -1) - (observationSummary(a.evaluations).average ?? -1);
+    if (sort === "coverage") {
+      const left = observationSummary(a.evaluations), right = observationSummary(b.evaluations);
+      return (left.possible ? left.observed / left.possible : 0) - (right.possible ? right.observed / right.possible : 0) || a.name.localeCompare(b.name);
+    }
+    return Number(a.athleteNumber ?? 99999) - Number(b.athleteNumber ?? 99999) || a.name.localeCompare(b.name);
   });
 
   return (
@@ -89,32 +107,33 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
           <input
             type="text"
             placeholder="Search # or name..."
+            aria-label="Search athletes by name or number"
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground placeholder:text-foreground/30"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <select
-          className="rounded-xl px-4 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
+        <label className="text-sm text-foreground/80">Position<select
+          className="block w-full mt-1 rounded-xl px-4 py-3 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
           value={posFilter}
           aria-label="Filter by position"
           onChange={(e) => setPosFilter(e.target.value)}
         >
           {positions.map(p => <option key={p} value={p} className="bg-card">{p}</option>)}
-        </select>
+        </select></label>
 
-        <select
-          className="rounded-xl px-4 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
+        <label className="text-sm text-foreground/80">Standout indicator<select
+          className="block w-full mt-1 rounded-xl px-4 py-3 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
           value={tagFilter}
           aria-label="Filter by standout indicator"
           onChange={(e) => setTagFilter(e.target.value)}
         >
-          {tags.map(t => <option key={t} value={t} className="bg-card">{t}</option>)}
-        </select>
+          {Array.from(new Set(tags)).map(t => <option key={t} value={t} className="bg-card">{t}</option>)}
+        </select></label>
 
-        <select
-          className="rounded-xl px-4 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
+        <label className="text-sm text-foreground/80">Team<select
+          className="block w-full mt-1 rounded-xl px-4 py-3 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
           value={teamFilter}
           aria-label="Filter by team"
           onChange={(e) => setTeamFilter(e.target.value)}
@@ -122,10 +141,27 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
           <option value="All" className="bg-card">All Teams</option>
           <option value="Unassigned" className="bg-card">Unassigned</option>
           {teams.map(t => <option key={t.id} value={t.id} className="bg-card">{t.name}</option>)}
-        </select>
+        </select></label>
+        <label className="text-sm text-foreground/80">Observation coverage
+          <select aria-label="Filter by observation coverage" value={coverageFilter} onChange={e => setCoverageFilter(e.target.value)} className="block w-full p-3 rounded-xl bg-card">
+            <option value="all">All coverage</option><option value="missing">No scores observed</option><option value="partial">Partially observed</option>
+          </select>
+        </label>
+        <label className="text-sm text-foreground/80">Follow-up flags
+          <select aria-label="Filter by follow-up flag" value={flagFilter} onChange={e => setFlagFilter(e.target.value)} className="block w-full p-3 rounded-xl bg-card">
+            <option value="all">All athletes</option><option value="open">Any unresolved flag</option>{flagTypes.map(type => <option key={type}>{type}</option>)}
+          </select>
+        </label>
+        <label className="text-sm text-foreground/80">Sort by
+          <select aria-label="Sort athletes" value={sort} onChange={e => setSort(e.target.value)} className="block w-full p-3 rounded-xl bg-card">
+            <option value="number">Athlete number</option><option value="name">Name</option><option value="coverage">Least observed first</option><option value="average">Observed average: high to low</option>
+          </select>
+        </label>
       </div>
+      <p role="status" className="text-sm text-foreground/70">Showing {filteredAthletes.length} of {athletes.length} athletes</p>
 
       <div className="space-y-3">
+        {!filteredAthletes.length && <p className="glass-card rounded-xl p-6 text-foreground/80">No athletes match these filters. Try changing the search or filters.</p>}
         {filteredAthletes.map((athlete) => (
           <div key={athlete.id} className="glass-card rounded-2xl border-white/5 overflow-hidden hover:border-primary/20 transition-all p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4">
             <div className="relative h-16 w-16 bg-white/5 rounded-xl overflow-hidden flex-shrink-0">
@@ -139,11 +175,11 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
             </div>
 
             <div className="flex-1 min-w-0 basis-[calc(100%-100px)] sm:basis-auto">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
                 <span className="bg-primary text-white font-black text-xs px-2 py-1 rounded-md shadow-glow">
                   #{athlete.athleteNumber}
                 </span>
-                <h3 className="text-base font-bold text-foreground truncate">{athlete.name}</h3>
+                <h3 className="text-base font-bold text-foreground break-words">{athlete.name}</h3>
                 {athlete.flags.length > 0 && (
                   <FlagIcon className="h-4 w-4 text-warning fill-current" />
                 )}

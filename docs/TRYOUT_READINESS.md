@@ -75,6 +75,26 @@ Keep these overrides until upstream manifests accept patched versions. When remo
 
 ## Remaining work
 
+### Seven workflow improvements — release follow-up
+
+All seven review recommendations are implemented and verified locally. The user authorized committing and deploying this follow-up on 2026-10-05. No schema migration or dependency addition is required. Deployment status is verified separately against the Vercel release and Git commit.
+
+1. Event actions (Check-in, Evaluate, Review, Teams, Export) now appear above the roster. Progress counts show registered, checked-in, athletes with observed scores, and unassigned athletes.
+2. Check-in supports name/number search, All/Pending/Checked-in filters and counts, a labeled walk-in button, a back link, and inline save errors. Successful check-in returns to the list.
+3. Evaluator progress reflects only that evaluator's actual scores: Not started, Started with no scores, or N of 6 observed. Needs my observation excludes fully observed athletes and includes empty saved records.
+4. Phone athlete names wrap; evaluation cards put progress on a separate line. Scoring uses larger labels, clearer contrast and two columns on phones. Athlete identity and save status share a sticky header.
+5. Review has visible filter labels, missing/partial coverage, unresolved follow-up flags, all 12 standout choices (plus existing custom tags), result counts, and sorting by number/name/coverage/observed average. Unobserved averages sort last.
+6. Walk-in uses labeled inputs, whole-number age constraints, consistent position choices, event age-group default, and a suggested available number. Both walk-in and existing check-in give safe duplicate-number messages, preserve input on failure, and wait for photo processing before save. Suggestions do not reserve numbers; the database unique constraint decides concurrent conflicts.
+7. Team management shows selected roster and unassigned athletes side by side on larger screens and stacked on phones, with roster/position counts, search, and explicit selection/assignment. Bulk assignment is atomic and accepts only unassigned athletes in the same active event; a stale or cross-event selection rolls back entirely. Existing team members can be moved or unassigned individually.
+
+No schema migration or new dependency is needed. Existing athletes, observations, tags and assignments are preserved. Shared standout ownership remains a separate follow-up requiring an additive migration.
+
+Verification: 14 tests pass, including unique-number enforcement and failed bulk assignment rollback; TypeScript/build pass and lint has zero errors with six image warnings. The production dependency audit remains at zero findings. Production-mode browser testing caught Next.js suppressing thrown validation messages, so expected check-in/walk-in and bulk-assignment failures now return safe structured errors. A root scroll container also blocked sticky positioning; that container was corrected, and existing malformed arrow SVGs were repaired.
+
+After the final rebuilt server restarted, the complete seven-workflow browser suite passed against a separate 30-athlete synthetic event in the isolated local database. It verified event actions/counts, number lookup/status filters, duplicate check-in errors and successful return, walk-in defaults/position choices/duplicate errors with fields preserved, evaluator-specific progress, autosave/reload, identity and Saved visibility while scrolled, coverage/tag/flag filters and sorting, bulk team assignment/counts, reload and export persistence, individual unassignment, and two-browser stale selection rejection without overwriting assignments. No uncaught browser errors occurred. All 32 layout checks (eight screens at 375/390/768/1280px) passed with no page overflow or offscreen controls. Physical-device/venue-network checks remain outstanding. Production was untouched.
+
+Screenshot evidence: [sticky evaluation identity and save status on phone](qa/2026-10-05-workflow/evaluation-sticky-phone.png), [walk-in form on phone](qa/2026-10-05-workflow/walk-in-phone.png). Only synthetic test data appears in these images.
+
 - Complete actual-device/venue-network rehearsal and concurrent edits/imports. Browser workflow and rebuilt phone-layout checks passed; native camera capture, browser-back recovery, OS termination and real venue Wi-Fi remain unverified.
 - Add evaluator ownership to standout tags with an additive migration that preserves legacy tags; shared toggle behavior remains in this batch.
 - Recheck the unresolved development-only `braces` advisory and replace temporary dependency overrides when upstream packages adopt patched versions. Production dependency audit is now clean locally.
