@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import CheckInComplete, { type LabelAthlete } from "./CheckInComplete";
 import { checkInAthlete } from "@/app/actions/athlete";
 import { compressImage } from "@/lib/image";
 import { Camera, Check } from "lucide-react";
@@ -12,6 +12,8 @@ interface Athlete {
   athleteNumber: string | null;
   photoUrl: string | null;
   sessionId: string;
+  positionPreference: string;
+  checkInStatus: boolean;
 }
 
 export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Athlete; suggestedNumber: string }) {
@@ -20,7 +22,7 @@ export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Ath
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [processingPhoto, setProcessingPhoto] = useState(false);
-  const router = useRouter();
+  const [savedAthlete, setSavedAthlete] = useState<LabelAthlete | null>(athlete.checkInStatus ? athlete : null);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,7 +54,7 @@ export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Ath
         photoUrl: photo || undefined,
       });
       if (!result.success) { setError(result.error); return; }
-      router.push(`/check-in/sessions/${athlete.sessionId}`);
+      setSavedAthlete(result.athlete);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : "Could not check in. Check your connection and retry.");
@@ -60,6 +62,8 @@ export default function CheckInForm({ athlete, suggestedNumber }: { athlete: Ath
       setLoading(false);
     }
   };
+
+  if (savedAthlete) return <CheckInComplete athlete={savedAthlete} onEdit={() => setSavedAthlete(null)} />;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

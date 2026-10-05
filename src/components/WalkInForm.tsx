@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import CheckInComplete, { type LabelAthlete } from "./CheckInComplete";
 import { addWalkInAthlete } from "@/app/actions/athlete";
 import { compressImage } from "@/lib/image";
 import { Camera } from "lucide-react";
@@ -12,7 +12,7 @@ export default function WalkInForm({ sessionId, defaultAgeGroup, suggestedNumber
   const [photo, setPhoto] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [processingPhoto, setProcessingPhoto] = useState(false);
-  const router = useRouter();
+  const [savedAthlete, setSavedAthlete] = useState<LabelAthlete | null>(null);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,7 +47,7 @@ export default function WalkInForm({ sessionId, defaultAgeGroup, suggestedNumber
     try {
       const result = await addWalkInAthlete(sessionId, data);
       if (!result.success) { setError(result.error); return; }
-      router.push(`/check-in/sessions/${sessionId}`);
+      setSavedAthlete(result.athlete);
     } catch (error) {
       console.error(error);
       setError(error instanceof Error ? error.message : "Could not save the athlete. Check your connection and retry.");
@@ -55,6 +55,8 @@ export default function WalkInForm({ sessionId, defaultAgeGroup, suggestedNumber
       setLoading(false);
     }
   };
+
+  if (savedAthlete) return <CheckInComplete athlete={savedAthlete} />;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
