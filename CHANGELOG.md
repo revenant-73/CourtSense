@@ -1,6 +1,6 @@
 # Changelog
 
-## Check-in label printing — pending production release
+## 2026-10-05 — Check-in labels and remembered webcam
 
 - Added shared webcam capture to registered-athlete check-in and walk-ins: explicit first camera selection, remembered browser preference, live preview, capture/retake/use, Change Camera, and upload fallback. Unavailable saved cameras require another explicit choice; permission and busy-camera errors have clear recovery messages. Camera tracks are released on capture, cancellation and unmount; save is blocked during photo work.
 
