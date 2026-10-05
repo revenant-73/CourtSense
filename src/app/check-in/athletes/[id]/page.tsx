@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions, CHECK_IN_ROLES } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import CheckInForm from "@/components/CheckInForm";
-import Link from "next/link";
 import { nextAthleteNumber } from "@/lib/workflow";
 
 export default async function AthleteCheckInFormPage({
@@ -32,7 +31,6 @@ export default async function AthleteCheckInFormPage({
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
-      <Link href={`/check-in/sessions/${athlete.sessionId}`} className="block mb-4 text-sm">Back to check-in list</Link>
       <h1 className="text-2xl font-bold text-foreground mb-2">Check-in Athlete</h1>
       <p className="text-foreground/40 mb-6">{athlete.name}</p>
 
