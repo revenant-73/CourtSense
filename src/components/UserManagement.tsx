@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUser, deleteUser } from "@/app/actions/user";
+import { createUser, deleteUser, resetUserPassword } from "@/app/actions/user";
+import { signOut } from "next-auth/react";
 import { UserPlus, Trash2 } from "lucide-react";
 
 interface UserRow {
@@ -30,6 +31,10 @@ export default function UserManagement({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [role, setRole] = useState("EVALUATOR");
+  const [resettingUser, setResettingUser] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,6 +73,7 @@ export default function UserManagement({
 
   return (
     <div className="space-y-10">
+      <p className="text-sm text-foreground/70">Production rejects the known demo passwords. Reset demo accounts to private passwords before the event. Password resets preserve evaluation history and sign the account out on its next request.</p>
       <form onSubmit={handleSubmit} className="glass-card rounded-[2rem] border-white/5 p-6 space-y-4">
         <h2 className="text-lg font-bold text-foreground flex items-center">
           <UserPlus className="h-5 w-5 mr-2 text-primary" />
@@ -99,7 +105,8 @@ export default function UserManagement({
               name="password"
               type="password"
               required
-              minLength={6}
+              minLength={12}
+              maxLength={128}
               className="mt-1 block w-full rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground p-2"
             />
           </div>
@@ -132,20 +139,41 @@ export default function UserManagement({
         </button>
       </form>
 
+      {resettingUser && <form className="glass-card rounded-2xl p-6 space-y-3" onSubmit={async event => {
+        event.preventDefault();
+        setResetting(true);
+        setResetMessage("");
+        try {
+          await resetUserPassword(resettingUser, newPassword);
+          setNewPassword("");
+          setResetMessage("Password changed. Existing sessions have been revoked.");
+          if (resettingUser === currentUserId) await signOut({ callbackUrl: "/login" });
+          setResettingUser(null);
+        } catch { setResetMessage("Could not reset the password. Please try again."); }
+        finally { setResetting(false); }
+      }}>
+        <label htmlFor="reset-password" className="block text-sm">New password for {users.find(user => user.id === resettingUser)?.email}</label>
+        <input id="reset-password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} value={newPassword} onChange={event => setNewPassword(event.target.value)} className="w-full rounded-xl bg-background/50 p-3" />
+        <button disabled={resetting} className="bg-primary text-white rounded-xl px-4 py-3 disabled:opacity-50">{resetting ? "Changing…" : "Change password"}</button>
+        <button type="button" disabled={resetting} onClick={() => { setResettingUser(null); setNewPassword(""); }} className="ml-3">Cancel</button>
+      </form>}
+      {resetMessage && <p role="status" className="text-sm text-foreground/70">{resetMessage}</p>}
+
       <div className="glass-card rounded-[2rem] border-white/5 overflow-hidden">
         <div className="px-6 py-4 border-b border-white/5">
           <h2 className="text-lg font-bold text-foreground">{users.length} Accounts</h2>
         </div>
         <ul className="divide-y divide-white/5">
           {users.map((u) => (
-            <li key={u.id} className="px-6 py-4 flex items-center justify-between">
-              <div>
+            <li key={u.id} className="px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 break-all">
                 <p className="text-sm font-semibold text-foreground">
                   {u.name} {u.id === currentUserId && <span className="text-foreground/30 font-normal">(you)</span>}
                 </p>
                 <p className="text-xs text-foreground/40">{u.email}</p>
               </div>
               <div className="flex items-center gap-4">
+                <button onClick={() => { setResettingUser(u.id); setNewPassword(""); setResetMessage(""); }} className="text-xs text-primary py-2">Reset password</button>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                   {ROLES.find((r) => r.value === u.role)?.label || u.role}
                 </span>

@@ -4,6 +4,8 @@ import { useState } from "react";
 import Papa from "papaparse";
 import { importAthletes } from "@/app/actions/athlete";
 import { Upload, CheckCircle, AlertCircle } from "lucide-react";
+import { validateAthleteImport } from "@/lib/athlete-import";
+import { useRouter } from "next/navigation";
 
 interface ImportData {
   name: string;
@@ -16,6 +18,23 @@ export default function ImportAthletes({ sessionId }: { sessionId: string }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<ImportData[] | null>(null);
+  const router = useRouter();
+
+  const confirmImport = async () => {
+    if (!preview || loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await importAthletes(sessionId, preview);
+      if (!res.success) { setError(res.error); return; }
+      setSuccess(res.count);
+      setPreview(null);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not import. Check your connection and review the roster before retrying.");
+    } finally { setLoading(false); }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,11 +43,12 @@ export default function ImportAthletes({ sessionId }: { sessionId: string }) {
     setLoading(true);
     setSuccess(null);
     setError(null);
+    setPreview(null);
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: async (results) => {
+      complete: (results) => {
         try {
           // Basic validation of CSV headers
           const headers = results.meta.fields || [];
@@ -39,8 +59,10 @@ export default function ImportAthletes({ sessionId }: { sessionId: string }) {
             throw new Error(`Missing columns: ${missing.join(", ")}`);
           }
 
-          const res = await importAthletes(sessionId, results.data as ImportData[]);
-          setSuccess(res.count);
+          if (results.errors.length) throw new Error(`CSV could not be read: ${results.errors[0].message}`);
+          const data = results.data as ImportData[];
+          validateAthleteImport(data);
+          setPreview(data);
         } catch (err) {
           setError(err instanceof Error ? err.message : "Failed to import athletes");
         } finally {
@@ -72,7 +94,20 @@ export default function ImportAthletes({ sessionId }: { sessionId: string }) {
       {loading && (
         <div className="flex items-center justify-center text-sm text-foreground/50">
           <div className="animate-spin mr-2 h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-          Importing athletes...
+          Processing athletes...
+        </div>
+      )}
+
+      {preview && (
+        <div className="space-y-3 text-sm text-foreground/70">
+          <p>{preview.length} athletes validated. Review before importing; nothing has been saved yet.</p>
+          <ul className="max-h-60 overflow-y-auto space-y-1">
+            {preview.map((row, i) => <li key={i}>{row.name} · {row.age}y · {row.ageGroup} · {row.positionPreference}</li>)}
+          </ul>
+          <div className="flex gap-3">
+            <button disabled={loading} onClick={confirmImport} className="rounded-xl bg-primary text-white px-4 py-3 disabled:opacity-50">Confirm import</button>
+            <button disabled={loading} onClick={() => setPreview(null)} className="rounded-xl bg-white/10 px-4 py-3">Cancel</button>
+          </div>
         </div>
       )}
 
@@ -95,7 +130,8 @@ export default function ImportAthletes({ sessionId }: { sessionId: string }) {
         <ul className="text-xs text-foreground/50 space-y-1">
           <li>• Headers: <code className="bg-white/10 px-1 rounded">name</code>, <code className="bg-white/10 px-1 rounded">age</code>, <code className="bg-white/10 px-1 rounded">ageGroup</code>, <code className="bg-white/10 px-1 rounded">positionPreference</code></li>
           <li>• Format: Plain text CSV</li>
-          <li>• Duplicate Detection: Not implemented in MVP</li>
+          <li>• Repeated name + age + age group requires review. Existing roster matches are blocked.</li>
+          <li>• Up to 1,000 athletes per file. All rows save together or none do.</li>
         </ul>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import ImportAthletes from "@/components/ImportAthletes";
 import DeleteSessionButton from "@/components/DeleteSessionButton";
+import ArchiveSessionButton from "@/components/ArchiveSessionButton";
 import { Calendar, Users, MapPin } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
 
@@ -103,6 +104,9 @@ export default async function SessionDetailsPage({
         <div className="space-y-8">
           <div className="glass-card rounded-[2rem] border-white/5 p-6">
             <h2 className="text-lg font-medium text-foreground mb-4">Actions</h2>
+            <p className="text-sm text-foreground/60 mb-3">{tryoutSession.status}</p>
+            <a href={`/api/sessions/${id}/export`} className="block rounded-xl bg-primary text-white text-center px-4 py-3 mb-3">Export results CSV</a>
+            <ArchiveSessionButton sessionId={id} archived={tryoutSession.status === "ARCHIVED"} />
             <Link
               href={`/director/sessions/${id}/review`}
               className="w-full inline-flex justify-center items-center py-3 px-4 rounded-xl shadow-glow text-sm font-medium text-white bg-success hover:bg-success/90 mb-3 transition-colors"
@@ -116,7 +120,7 @@ export default async function SessionDetailsPage({
               Manage Teams
             </Link>
             <h2 className="text-lg font-medium text-foreground mb-4 pt-4 border-t border-white/5">Import Athletes</h2>
-            <ImportAthletes sessionId={id} />
+            {tryoutSession.status === "ACTIVE" ? <ImportAthletes sessionId={id} /> : <p className="text-sm text-foreground/60">Reopen this session to import athletes.</p>}
           </div>
 
           <div className="glass-card rounded-[2rem] border-white/5 p-6">

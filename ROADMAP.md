@@ -1,4 +1,8 @@
-# Roadmap to Aug 17 Launch
+# Roadmap
+
+Current plan: [October 2026 tryout readiness](docs/TRYOUT_READINESS.md). The August assessment below is historical.
+
+## Historical roadmap to Aug 17 launch
 
 Assessment taken 2026-08-02. Target: fully operational for real tryout use by **2026-08-17**.
 

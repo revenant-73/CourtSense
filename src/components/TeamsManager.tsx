@@ -96,18 +96,19 @@ export default function TeamsManager({
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleCreateTeam} className="glass-card rounded-2xl border-white/5 p-4 flex gap-3">
+      <form onSubmit={handleCreateTeam} className="glass-card rounded-2xl border-white/5 p-4 flex flex-col sm:flex-row gap-3">
         <input
           type="text"
           placeholder="New team name (e.g. 16U Red)"
-          className="flex-1 px-4 py-2 rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground placeholder:text-foreground/30"
+          className="w-full min-w-0 flex-1 px-4 py-2 rounded-xl bg-background/50 ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-primary outline-none text-foreground placeholder:text-foreground/30"
+          aria-label="New team name"
           value={newTeamName}
           onChange={(e) => setNewTeamName(e.target.value)}
         />
         <button
           type="submit"
           disabled={creating || !newTeamName.trim()}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          className="inline-flex shrink-0 justify-center items-center gap-2 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold text-white bg-primary hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Create

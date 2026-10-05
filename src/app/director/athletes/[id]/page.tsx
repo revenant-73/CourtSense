@@ -5,6 +5,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Flag as FlagIcon, Tag as TagIcon, Star, MessageSquare } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
+import { observationSummary } from "@/lib/scoring";
 
 const CATEGORIES = [
   { id: "perceptionScore", label: "Perception & Decision" },
@@ -16,20 +17,6 @@ const CATEGORIES = [
 ] as const;
 
 const SCORE_LABELS = ["Not Observed", "Emerging", "Consistent", "Standout"];
-
-interface ScoredEvaluation {
-  perceptionScore: number;
-  adaptabilityScore: number;
-  functionalSkillScore: number;
-  engagementScore: number;
-  teamContributionScore: number;
-  learningBehaviorScore: number;
-}
-
-function evaluationAverage(e: ScoredEvaluation) {
-  const total = CATEGORIES.reduce((acc, c) => acc + e[c.id], 0);
-  return total / CATEGORIES.length;
-}
 
 export default async function DirectorAthleteDetailPage({
   params,
@@ -47,12 +34,12 @@ export default async function DirectorAthleteDetailPage({
     where: { id },
     include: {
       evaluations: {
-        include: { evaluator: true },
+        include: { evaluator: { select: { name: true, email: true } } },
         orderBy: { createdAt: "asc" },
       },
       tags: true,
       flags: {
-        include: { evaluator: true },
+        include: { evaluator: { select: { name: true, email: true } } },
         orderBy: { createdAt: "asc" },
       },
       team: true,
@@ -63,13 +50,8 @@ export default async function DirectorAthleteDetailPage({
     notFound();
   }
 
-  const overallAvg =
-    athlete.evaluations.length > 0
-      ? (
-          athlete.evaluations.reduce((acc, e) => acc + evaluationAverage(e), 0) /
-          athlete.evaluations.length
-        ).toFixed(1)
-      : "-";
+  const summary = observationSummary(athlete.evaluations);
+  const overallAvg = summary.average?.toFixed(1) ?? "—";
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
@@ -110,10 +92,13 @@ export default async function DirectorAthleteDetailPage({
           </div>
         </div>
         <div className="text-center flex-shrink-0">
-          <p className="text-[9px] text-foreground/40 uppercase font-bold">Avg ({athlete.evaluations.length})</p>
+          <p className="text-[9px] text-foreground/40 uppercase font-bold">Observed avg</p>
           <p className="text-2xl font-black text-success">{overallAvg}</p>
+          <p className="text-xs text-foreground/60">{summary.observed}/{summary.possible} observed</p>
         </div>
       </div>
+
+      <p className="text-sm text-foreground/60 mb-6">Not observed is excluded from averages. Coverage shows observed categories across all evaluations.</p>
 
       {athlete.tags.length > 0 && (
         <section className="mb-6">
@@ -173,7 +158,7 @@ export default async function DirectorAthleteDetailPage({
                 <span className="text-sm font-bold text-foreground">
                   {e.evaluator.name || e.evaluator.email}
                 </span>
-                <span className="text-sm font-black text-success">{evaluationAverage(e).toFixed(1)} avg</span>
+                <span className="text-sm font-black text-success">{observationSummary([e]).average?.toFixed(1) ?? "—"} observed avg · {observationSummary([e]).observed}/6</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                 {CATEGORIES.map((cat) => (

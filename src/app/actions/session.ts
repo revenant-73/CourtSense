@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { deleteSessionData } from "@/lib/session-data";
 
 export async function deleteSession(sessionId: string) {
   const session = await getServerSession(authOptions);
@@ -12,26 +13,18 @@ export async function deleteSession(sessionId: string) {
     throw new Error("Unauthorized");
   }
 
-  const tryoutSession = await db.tryoutSession.findUnique({
-    where: { id: sessionId },
-    select: { id: true },
-  });
-
-  if (!tryoutSession) {
-    throw new Error("Session not found");
-  }
-
-  const athleteIds = await db.athlete
-    .findMany({ where: { sessionId }, select: { id: true } })
-    .then((list) => list.map((a) => a.id));
-
-  await db.evaluation.deleteMany({ where: { athleteId: { in: athleteIds } } });
-  await db.tag.deleteMany({ where: { athleteId: { in: athleteIds } } });
-  await db.flag.deleteMany({ where: { athleteId: { in: athleteIds } } });
-  await db.athlete.deleteMany({ where: { sessionId } });
-  await db.team.deleteMany({ where: { sessionId } });
-  await db.tryoutSession.delete({ where: { id: sessionId } });
+  await deleteSessionData(db, sessionId);
 
   revalidatePath("/director");
   return { success: true };
+}
+
+export async function setSessionArchived(sessionId: string, archived: boolean) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "DIRECTOR") throw new Error("Unauthorized");
+  await db.tryoutSession.update({ where: { id: sessionId }, data: { status: archived ? "ARCHIVED" : "ACTIVE" } });
+  revalidatePath("/director");
+  revalidatePath("/evaluate");
+  revalidatePath("/check-in");
+  revalidatePath(`/director/sessions/${sessionId}`);
 }

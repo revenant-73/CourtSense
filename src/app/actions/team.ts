@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { requireActiveAthlete, requireActiveSession } from "@/lib/tryout";
 
 async function requireDirector() {
   const session = await getServerSession(authOptions);
@@ -15,6 +16,7 @@ async function requireDirector() {
 
 export async function createTeam(sessionId: string, name: string) {
   await requireDirector();
+  await requireActiveSession(sessionId);
 
   const trimmed = name.trim();
   if (!trimmed) {
@@ -44,12 +46,12 @@ export async function deleteTeam(teamId: string) {
   if (!team) {
     throw new Error("Team not found");
   }
+  await requireActiveSession(team.sessionId);
 
-  await db.athlete.updateMany({
+  await db.$transaction([db.athlete.updateMany({
     where: { teamId },
     data: { teamId: null },
-  });
-  await db.team.delete({ where: { id: teamId } });
+  }), db.team.delete({ where: { id: teamId } })]);
 
   revalidatePath(`/director/sessions/${team.sessionId}/teams`);
   revalidatePath(`/director/sessions/${team.sessionId}/review`);
@@ -58,6 +60,7 @@ export async function deleteTeam(teamId: string) {
 
 export async function assignAthleteTeam(athleteId: string, teamId: string | null) {
   await requireDirector();
+  await requireActiveAthlete(athleteId);
 
   const athlete = await db.athlete.findUnique({
     where: { id: athleteId },

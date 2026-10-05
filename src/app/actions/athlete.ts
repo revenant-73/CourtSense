@@ -4,13 +4,9 @@ import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions, CHECK_IN_ROLES } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-
-interface ImportAthlete {
-  name: string;
-  age: string;
-  ageGroup: string;
-  positionPreference: string;
-}
+import type { ImportAthlete } from "@/lib/athlete-import";
+import { importRoster } from "@/lib/roster";
+import { requireActiveAthlete, requireActiveSession } from "@/lib/tryout";
 
 export async function importAthletes(sessionId: string, athletes: ImportAthlete[]) {
   const session = await getServerSession(authOptions);
@@ -19,22 +15,10 @@ export async function importAthletes(sessionId: string, athletes: ImportAthlete[
     throw new Error("Unauthorized");
   }
 
-  const createdAthletes = await Promise.all(
-    athletes.map((athlete) =>
-      db.athlete.create({
-        data: {
-          name: athlete.name,
-          age: parseInt(athlete.age),
-          ageGroup: athlete.ageGroup,
-          positionPreference: athlete.positionPreference,
-          sessionId: sessionId,
-        },
-      })
-    )
-  );
+  const result = await importRoster(db, sessionId, athletes);
 
   revalidatePath(`/director/sessions/${sessionId}`);
-  return { success: true, count: createdAthletes.length };
+  return result;
 }
 
 export async function createSession(data: {
@@ -72,6 +56,8 @@ export async function checkInAthlete(athleteId: string, data: {
     throw new Error("Unauthorized");
   }
 
+  await requireActiveAthlete(athleteId);
+  if (!/^\d{4}$/.test(data.athleteNumber)) throw new Error("Assign a four-digit athlete number");
   const athlete = await db.athlete.update({
     where: { id: athleteId },
     data: {
@@ -101,9 +87,16 @@ export async function addWalkInAthlete(sessionId: string, data: {
     throw new Error("Unauthorized");
   }
 
+  await requireActiveSession(sessionId);
+  if (!data.name.trim() || !data.ageGroup.trim() || !data.positionPreference.trim() || !Number.isInteger(data.age) || data.age < 1 || data.age > 99 || !/^\d{4}$/.test(data.athleteNumber)) throw new Error("Provide a name, age (1–99), age group, position, and four-digit number");
   const athlete = await db.athlete.create({
     data: {
-      ...data,
+      name: data.name.trim(),
+      age: data.age,
+      ageGroup: data.ageGroup.trim(),
+      positionPreference: data.positionPreference.trim(),
+      athleteNumber: data.athleteNumber,
+      photoUrl: data.photoUrl,
       sessionId,
       checkInStatus: true,
       checkInTime: new Date(),

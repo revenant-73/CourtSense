@@ -130,7 +130,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN === "true" && (
+          {process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_SHOW_DEMO_LOGIN === "true" && (
             <div className="mt-10 pt-8 border-t border-white/5 space-y-3">
               <p className="text-center text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em] mb-4">
                 Demo Access

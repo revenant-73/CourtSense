@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, Flag as FlagIcon } from "lucide-react";
 import { formatPosition } from "@/lib/utils";
 import { assignAthleteTeam } from "@/app/actions/team";
+import { observationSummary } from "@/lib/scoring";
 
 interface Evaluation {
   id: string;
@@ -14,18 +15,6 @@ interface Evaluation {
   engagementScore: number;
   teamContributionScore: number;
   learningBehaviorScore: number;
-}
-
-function evaluationAverage(e: Evaluation) {
-  return (
-    (e.perceptionScore +
-      e.adaptabilityScore +
-      e.functionalSkillScore +
-      e.engagementScore +
-      e.teamContributionScore +
-      e.learningBehaviorScore) /
-    6
-  );
 }
 
 interface Tag {
@@ -93,6 +82,7 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
 
   return (
     <div className="space-y-6">
+      <p className="text-sm text-foreground/60">Observed avg uses scores 1–3 only. Not observed is excluded. Coverage shows observed categories across all evaluations; compare coverage alongside the average.</p>
       <div className="flex flex-wrap gap-4 items-center glass-card p-4 rounded-2xl border-white/5">
         <div className="flex-1 min-w-[200px] relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-foreground/30" />
@@ -108,6 +98,7 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
         <select
           className="rounded-xl px-4 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
           value={posFilter}
+          aria-label="Filter by position"
           onChange={(e) => setPosFilter(e.target.value)}
         >
           {positions.map(p => <option key={p} value={p} className="bg-card">{p}</option>)}
@@ -116,6 +107,7 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
         <select
           className="rounded-xl px-4 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
           value={tagFilter}
+          aria-label="Filter by standout indicator"
           onChange={(e) => setTagFilter(e.target.value)}
         >
           {tags.map(t => <option key={t} value={t} className="bg-card">{t}</option>)}
@@ -124,6 +116,7 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
         <select
           className="rounded-xl px-4 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-sm text-foreground"
           value={teamFilter}
+          aria-label="Filter by team"
           onChange={(e) => setTeamFilter(e.target.value)}
         >
           <option value="All" className="bg-card">All Teams</option>
@@ -134,7 +127,7 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
 
       <div className="space-y-3">
         {filteredAthletes.map((athlete) => (
-          <div key={athlete.id} className="glass-card rounded-2xl border-white/5 overflow-hidden hover:border-primary/20 transition-all p-3 flex items-center gap-4">
+          <div key={athlete.id} className="glass-card rounded-2xl border-white/5 overflow-hidden hover:border-primary/20 transition-all p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4">
             <div className="relative h-16 w-16 bg-white/5 rounded-xl overflow-hidden flex-shrink-0">
               {athlete.photoUrl ? (
                 <img src={athlete.photoUrl} alt="" className="h-full w-full object-cover" />
@@ -145,7 +138,7 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
               )}
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 basis-[calc(100%-100px)] sm:basis-auto">
               <div className="flex items-center gap-2 mb-1">
                 <span className="bg-primary text-white font-black text-xs px-2 py-1 rounded-md shadow-glow">
                   #{athlete.athleteNumber}
@@ -174,23 +167,23 @@ export default function DirectorReviewFilter({ athletes, teams }: { athletes: At
               )}
             </div>
 
-            <div className="flex gap-6 text-center px-4 border-l border-r border-white/5 flex-shrink-0">
+            <div className="flex gap-4 text-center sm:px-4 sm:border-l sm:border-r border-white/5 flex-shrink-0">
               <div>
                 <p className="text-[9px] text-foreground/40 uppercase font-bold">Evals</p>
                 <p className="text-base font-black text-primary">{athlete.evaluations.length}</p>
               </div>
               <div>
-                <p className="text-[9px] text-foreground/40 uppercase font-bold">Avg</p>
+                <p className="text-[9px] text-foreground/40 uppercase font-bold">Observed avg</p>
                 <p className="text-base font-black text-success">
-                  {athlete.evaluations.length > 0
-                    ? (athlete.evaluations.reduce((acc: number, e: Evaluation) => acc + evaluationAverage(e), 0) / athlete.evaluations.length).toFixed(1)
-                    : "-"}
+                  {observationSummary(athlete.evaluations).average?.toFixed(1) ?? "—"}
                 </p>
+                <p className="text-xs text-foreground/60">{observationSummary(athlete.evaluations).observed}/{observationSummary(athlete.evaluations).possible} observed</p>
               </div>
             </div>
 
             <select
-              className="hidden sm:block rounded-xl px-3 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-xs text-foreground flex-shrink-0 max-w-[140px]"
+              className="rounded-xl px-3 py-2 bg-background/50 ring-1 ring-inset ring-white/10 text-xs text-foreground flex-shrink-0 max-w-[140px]"
+              aria-label={`Team for ${athlete.name}`}
               value={athleteTeams[athlete.id] || ""}
               onChange={(e) => handleTeamChange(athlete.id, e.target.value)}
             >

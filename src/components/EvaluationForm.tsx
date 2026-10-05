@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { saveEvaluation, toggleTag, saveFlag } from "@/app/actions/evaluation";
 import { Star, Flag, MessageSquare, Check, Tag as TagIcon } from "lucide-react";
 
@@ -63,45 +63,86 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
   });
   const [notes, setNotes] = useState(initialEvaluation?.notes || "");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [indicatorError, setIndicatorError] = useState("");
+  const [indicatorPending, setIndicatorPending] = useState(false);
+  const saveLock = useRef(false);
+  const indicatorLock = useRef(false);
+  const snapshot = JSON.stringify({ ...scores, notes });
+  const [savedSnapshot, setSavedSnapshot] = useState(snapshot);
+  const [hasSaved, setHasSaved] = useState(Boolean(initialEvaluation));
+  const dirty = snapshot !== savedSnapshot;
   const [activeTags, setActiveTags] = useState<string[]>(athlete.tags.map(t => t.name));
   const [showFlagModal, setShowFlagModal] = useState(false);
 
   const handleSave = useCallback(async () => {
+    if (saveLock.current) return;
+    saveLock.current = true;
     setSaving(true);
+    setSaveError("");
     try {
       await saveEvaluation(athlete.id, { ...scores, notes });
-    } catch (err) {
-      console.error(err);
+      setSavedSnapshot(snapshot);
+      setHasSaved(true);
+    } catch {
+      setSaveError("Could not save. Keep this page open, check your connection, then tap Retry save.");
     } finally {
+      saveLock.current = false;
       setSaving(false);
     }
-  }, [athlete.id, scores, notes]);
+  }, [athlete.id, scores, notes, snapshot]);
 
   // Auto-save logic
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (initialEvaluation) {
-        await handleSave();
-      }
-    }, 2000);
+    if (!dirty || saving || saveError) return;
+    const timer = setTimeout(() => { void handleSave(); }, 2000);
     return () => clearTimeout(timer);
-  }, [handleSave, initialEvaluation]);
+  }, [handleSave, dirty, saving, saveError]);
+
+  useEffect(() => {
+    if (!dirty && !saving) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const beforeNavigation = (event: MouseEvent) => {
+      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      if (link && !window.confirm("Your evaluation has unsaved changes. Leave without saving?")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", beforeNavigation, true);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      document.removeEventListener("click", beforeNavigation, true);
+    };
+  }, [dirty, saving]);
 
   const handleTagToggle = async (tag: string) => {
+    if (indicatorLock.current) return;
+    indicatorLock.current = true;
+    setIndicatorPending(true);
+    setIndicatorError("");
     try {
       const res = await toggleTag(athlete.id, tag);
       if (res.status === 'added') {
-        setActiveTags([...activeTags, tag]);
+        setActiveTags(current => [...current, tag]);
       } else {
-        setActiveTags(activeTags.filter(t => t !== tag));
+        setActiveTags(current => current.filter(t => t !== tag));
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      setIndicatorError("Could not update the indicator. Check your connection and try again.");
+    } finally {
+      indicatorLock.current = false;
+      setIndicatorPending(false);
     }
   };
 
   return (
     <div className="space-y-5 pb-8">
+      <p role="status" aria-live="polite" className={`text-sm ${saveError ? "text-warning" : "text-foreground/70"}`}>
+        {saveError || (saving ? "Saving…" : dirty ? "Unsaved changes — saving shortly" : hasSaved ? "Saved" : "Select scores or add notes to start. Changes save automatically.")}
+      </p>
+      {indicatorError && <p role="alert" className="text-sm text-warning">{indicatorError}</p>}
       {/* Standout Tags */}
       <section>
         <div className="flex items-center justify-between mb-2">
@@ -116,6 +157,8 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
             <button
               key={tag}
               onClick={() => handleTagToggle(tag)}
+              disabled={indicatorPending}
+              aria-pressed={activeTags.includes(tag)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${
                 activeTags.includes(tag)
                   ? "bg-primary text-white border-primary shadow-glow scale-105"
@@ -145,6 +188,9 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
                 <button
                   key={s.value}
                   onClick={() => setScores({ ...scores, [cat.id]: s.value })}
+                  disabled={saving}
+                  aria-pressed={scores[cat.id] === s.value}
+                  aria-label={`${cat.label}: ${s.label}`}
                   className={`py-2 px-1 rounded-xl text-[9px] font-black uppercase tracking-tighter text-center leading-tight transition-all border-2 ${
                     scores[cat.id] === s.value
                       ? "border-primary bg-primary/10 text-primary shadow-[inset_0_0_20px_rgba(99,102,241,0.1)]"
@@ -168,6 +214,9 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
         </h3>
         <textarea
           value={notes}
+          disabled={saving}
+          aria-label="Evaluator notes"
+          maxLength={10000}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Detailed observation data..."
           className="w-full h-20 p-4 glass-card rounded-2xl border-white/5 focus:ring-2 focus:ring-primary/50 outline-none resize-none text-foreground placeholder:text-foreground/20 transition-all shadow-xl"
@@ -188,7 +237,7 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
           disabled={saving}
           className="flex-[2] flex items-center justify-center py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-glow hover:bg-primary/90 disabled:opacity-50 transition-all active:scale-95"
         >
-          {saving ? "Transmitting..." : <><Check className="h-4 w-4 mr-2" /> Save</>}
+          {saving ? "Saving..." : <><Check className="h-4 w-4 mr-2" /> {saveError ? "Retry save" : "Save"}</>}
         </button>
       </div>
 
@@ -202,15 +251,28 @@ export default function EvaluationForm({ athlete, initialEvaluation }: { athlete
                 <button
                   key={type}
                   onClick={async () => {
-                    await saveFlag(athlete.id, { type });
-                    setShowFlagModal(false);
+                    if (indicatorLock.current) return;
+                    indicatorLock.current = true;
+                    setIndicatorPending(true);
+                    setIndicatorError("");
+                    try {
+                      await saveFlag(athlete.id, { type });
+                      setShowFlagModal(false);
+                    } catch {
+                      setIndicatorError("Could not save the flag. Check your connection and try again.");
+                    } finally {
+                      indicatorLock.current = false;
+                      setIndicatorPending(false);
+                    }
                   }}
+                  disabled={indicatorPending}
                   className="w-full text-left p-4 hover:bg-primary/10 hover:text-primary rounded-2xl text-foreground/60 font-bold text-sm transition-all border border-transparent hover:border-primary/20"
                 >
                   {type}
                 </button>
               ))}
             </div>
+            {indicatorError && <p role="alert" className="text-sm text-warning mb-3">{indicatorError}</p>}
             <button 
               onClick={() => setShowFlagModal(false)}
               className="w-full py-4 bg-white/5 text-foreground/40 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all"

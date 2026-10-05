@@ -24,11 +24,11 @@ export default async function SessionReviewPage({
       athletes: {
         include: {
           evaluations: {
-            include: { evaluator: true }
+            include: { evaluator: { select: { name: true, email: true } } }
           },
           tags: true,
           flags: {
-            include: { evaluator: true }
+            include: { evaluator: { select: { name: true, email: true } } }
           },
         },
       },

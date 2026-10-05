@@ -1,6 +1,4 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
-import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
@@ -8,7 +6,6 @@ import { db } from "./db";
 export { CHECK_IN_ROLES, EVALUATE_ROLES } from "./roles";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db) as unknown as Adapter,
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
@@ -28,9 +25,14 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid credentials");
         }
 
+        // Known seed credentials are never accepted by a production build.
+        if (process.env.NODE_ENV === "production" && credentials.password === "admin123" && ["admin@tvvc.org", "evaluator@tvvc.org", "checkin@tvvc.org"].includes(credentials.email.trim().toLowerCase())) {
+          return null;
+        }
+
         const user = await db.user.findUnique({
           where: {
-            email: credentials.email,
+            email: credentials.email.trim().toLowerCase(),
           },
         });
 
@@ -61,13 +63,21 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        const account = await db.user.findUnique({ where: { id: user.id }, select: { updatedAt: true } });
+        token.accountVersion = account?.updatedAt.toISOString();
       }
+      if (!token.id) return { id: "", role: "" };
+      const account = await db.user.findUnique({ where: { id: token.id }, select: { role: true, updatedAt: true } });
+      // A removed account or password reset revokes its existing sessions.
+      // Pre-upgrade tokens without a version require a fresh sign-in.
+      if (!account || token.accountVersion !== account.updatedAt.toISOString()) return { id: "", role: "" };
+      token.role = account.role;
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.role = token.role;
-        session.user.id = token.id;
+        session.user.role = token.role || "";
+        session.user.id = token.id || "";
       }
       return session;
     },

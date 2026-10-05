@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-05 (local, not deployed)
+
+- Documented current production match and November readiness plan in `docs/TRYOUT_READINESS.md`.
+- Added first-evaluation autosave, visible save/error/retry status, save serialization, and unsaved link/unload warnings.
+- Added validated CSV preview and atomic imports with conservative duplicate detection.
+- Excluded unobserved scores from averages and displayed observation coverage consistently in review/details/export.
+- Added director-only CSV exports, archive/reopen controls, archived-session mutation guards, and atomic session/team deletion.
+- Added password resets without deleting history, session revocation after password reset/account removal, and production rejection of known demo credentials. Production demo buttons are hidden. Existing logins require a new sign-in on release.
+- Updated Next.js/ESLint config to 16.3.8, removed the unused Prisma Auth adapter, and pinned patched Auth.js core, Prisma config merger, and Prisma MySQL driver dependencies. Production dependency audit now reports zero vulnerabilities; the unresolved development-only braces advisory is documented.
+- Added regression checks using an isolated local database; no production data changed. Browser workflows passed after the user started the local test server, including photo check-in, failure/retry, imports/exports and access controls. Fixed a phone-only clipped Create button in Manage Teams; the rebuilt fix passed creation and layout checks at 375/390/768/1280px. Screenshot evidence is saved under `docs/qa/2026-10-05`.
+
+
 ## 2026-08-02
 
 ### Bug fixes

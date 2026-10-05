@@ -24,7 +24,10 @@ export async function createUser(data: {
     throw new Error("Invalid role");
   }
 
-  const existing = await db.user.findUnique({ where: { email: data.email } });
+  if (!data.name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim()) || data.password.length < 12 || data.password.length > 128) throw new Error("Provide a name, valid email, and password of 12–128 characters");
+  const email = data.email.trim().toLowerCase();
+
+  const existing = await db.user.findUnique({ where: { email } });
   if (existing) {
     throw new Error("A user with this email already exists");
   }
@@ -34,7 +37,7 @@ export async function createUser(data: {
   const user = await db.user.create({
     data: {
       name: data.name,
-      email: data.email,
+      email,
       password: hashedPassword,
       role: data.role,
     },
@@ -42,6 +45,16 @@ export async function createUser(data: {
 
   revalidatePath("/director/users");
   return { id: user.id, name: user.name, email: user.email, role: user.role };
+}
+
+export async function resetUserPassword(userId: string, password: string) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "DIRECTOR") throw new Error("Unauthorized");
+  if (typeof password !== "string" || password.length < 12 || password.length > 128) throw new Error("Use a password of 12–128 characters");
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await db.user.update({ where: { id: userId }, data: { password: hashedPassword } });
+  revalidatePath("/director/users");
+  return { success: true };
 }
 
 export async function deleteUser(userId: string) {

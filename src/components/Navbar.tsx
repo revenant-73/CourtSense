@@ -8,7 +8,7 @@ import { CHECK_IN_ROLES, EVALUATE_ROLES } from "@/lib/roles";
 export default function Navbar() {
   const { data: session } = useSession();
 
-  if (!session) return null;
+  if (!session?.user?.id) return null;
 
   const role = session.user.role;
 

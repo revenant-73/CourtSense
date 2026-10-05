@@ -57,9 +57,11 @@ Open [http://localhost:3000](http://localhost:3000).
 | `TURSO_AUTH_TOKEN` | Only for Turso | Auth token for a remote Turso database. Omit for a local SQLite file. |
 | `NEXTAUTH_SECRET` | Yes | Random secret used to sign session tokens. Generate with `openssl rand -base64 32`. |
 | `NEXTAUTH_URL` | Yes | The app's base URL (e.g. `http://localhost:3000` in dev, your production URL in prod). |
-| `NEXT_PUBLIC_SHOW_DEMO_LOGIN` | No | Set to `"true"` to show one-click demo login buttons on `/login` (useful for demos; omit once real tryout data is in use). |
+| `NEXT_PUBLIC_SHOW_DEMO_LOGIN` | No | Development only: `"true"` shows demo buttons. Production hides them and rejects the known demo passwords. |
 
 ## Useful Commands
+
+See [current tryout readiness](docs/TRYOUT_READINESS.md) for local changes, verification, and release requirements. Directors can preview/import rosters, export results from a session, archive/reopen sessions, and reset passwords from Manage Users. CSV export is not a complete database backup. Password resets preserve evaluations and invalidate the account's existing sessions on the next request.
 
 ```bash
 npx prisma studio          # browse the database in a GUI
@@ -67,6 +69,7 @@ npx prisma migrate dev     # create a new migration (interactive; see note below
 npx eslint .                # lint
 npx tsc --noEmit            # type-check
 npx next build               # production build
+npm test                     # regression checks using an isolated temporary database
 ```
 
 **Note:** `prisma migrate dev` requires an interactive terminal and will fail in non-interactive shells. In that case, hand-write the migration SQL under `prisma/migrations/<timestamp>_<name>/migration.sql` and apply it with `npx prisma migrate deploy` (works against the local `file:` database — for the Turso production database, see [Deployment](#deployment)).
@@ -100,4 +103,4 @@ This applies any migration under `prisma/migrations/` not yet recorded in Turso'
    ```
 
    Sign in as that Director and use **Manage Users** in the app to create real Evaluator and Check-in Staff accounts.
-4. (Optional) Also run `npx prisma db seed` against the same database to add the 3 demo accounts (`admin@tvvc.org` / `evaluator@tvvc.org` / `checkin@tvvc.org`, password `admin123`) and a 30-athlete demo session — useful for a dry run before the real event. **Delete the demo session from the Director dashboard's Danger Zone before the actual tryout** — this removes the session and all its athletes/evaluations/tags/flags. The demo *accounts* aren't removed by that (only the demo session), so change or delete them separately if you don't want well-known demo credentials sitting in production.
+4. Use an isolated development database for seeded demo accounts and a dry run. Production builds reject the known seed passwords. Existing production demo accounts can receive private passwords through Manage Users without deleting evaluation history. Archive rehearsal sessions to preserve their records; use Delete Session only when permanent deletion is intended.
