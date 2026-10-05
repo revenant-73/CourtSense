@@ -2,6 +2,14 @@
 
 Target: real tryout use in about four weeks (early November; exact date to confirm).
 
+## Released October 5, 2026
+
+- Application commit `5f89ed212028a6b15b658f20e8311fe93c1285a1` pushed to GitHub `main` and deployed to production by Vercel Git integration.
+- Deployment `dpl_CbgpoTWy5wKxaZwzY8mZ3iLEwqvs` is READY and serves https://court-sense-lac.vercel.app. Remote build generated Prisma Client and passed Next.js compilation/TypeScript. No database migration or seed was run.
+- Live browser smoke checks passed: phone/desktop login, hidden demo controls, rejection of known demo credentials, logged-out Director/Evaluate/Check-in redirects, anonymous CSV export rejection (401), and the credentials provider endpoint. No uncaught browser errors occurred, and no authenticated production data was changed.
+- Real staff sign-in after deployment remains to be confirmed by the user; their successful production sign-in was before this release. Everyone must sign in again because older sessions are revoked.
+- The baseline and local implementation notes below record the earlier stages; this section is the current release status.
+
 ## Verified baseline
 
 - Local `main`, refreshed GitHub `origin/main`, and Vercel production all match `4ac0de893960defed93b09207b1871ed18999142`.
@@ -24,7 +32,7 @@ Target: real tryout use in about four weeks (early November; exact date to confi
 
 ## Implementation and release tracking
 
-First local implementation batch is implemented (not deployed):
+First implementation batch (now deployed as recorded above):
 
 - Evaluation changes autosave for new and existing evaluations. Saved/saving/error states and manual retry are visible; saves cannot overlap, and score/notes inputs pause during a save. Link navigation and page unload warn about unsaved changes. Browser back and mobile OS termination/draft recovery still need verification and follow-up; this is not offline storage.
 - CSV upload validates every row, previews before saving, detects repeated name/age/age-group combinations, and imports atomically. A mixed batch with a match already in the roster saves nothing. Same-name athletes with the same age/group require manual review and can be added separately as walk-ins; the matching key is a conservative duplicate check, not a permanent identity.

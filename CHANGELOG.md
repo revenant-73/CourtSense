@@ -1,6 +1,8 @@
 # Changelog
 
-## 2026-10-05 (local, not deployed)
+## 2026-10-05
+
+- Released application commit `5f89ed2` to Vercel production; live login, demo rejection, protected-route redirects and anonymous export checks passed. No database migration or seed was run.
 
 - Documented current production match and November readiness plan in `docs/TRYOUT_READINESS.md`.
 - Added first-evaluation autosave, visible save/error/retry status, save serialization, and unsaved link/unload warnings.
