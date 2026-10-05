@@ -45,7 +45,7 @@ export default function CheckInComplete({ athlete, onEdit }: { athlete: LabelAth
         {printing ? "Requesting print…" : "Print Label"}
       </button>
       <p role="status" className="text-sm text-foreground/70">{message}</p>
-      <Link href={`/check-in/sessions/${athlete.sessionId}`} className="block rounded-xl border border-white/20 py-3 text-center font-semibold">Next Athlete</Link>
+      <Link href={`/check-in/sessions/${athlete.sessionId}`} className="block rounded-xl border border-white/20 py-3 text-center font-semibold">Back to Check-in List</Link>
       {onEdit && <button type="button" onClick={onEdit} className="w-full py-2 text-sm underline">Edit check-in</button>}
       {printTarget && createPortal(
         <div className="tryout-print-label" aria-hidden="true">

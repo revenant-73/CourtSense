@@ -2,7 +2,7 @@
 
 ## What the app implements
 
-After successful check-in or walk-in creation, the app stays on a saved confirmation with Print Label and Next Athlete. Reopening a checked-in athlete shows the same controls; Edit check-in allows changes before saving a replacement label. Printing never saves an athlete, creates an athlete, or changes check-in status. Only a successful saved check-in enables the label flow.
+After successful check-in or walk-in creation, the app stays on a saved confirmation with Print Label and Back to Check-in List. Reopening a checked-in athlete shows the same controls; Edit check-in allows changes before saving a replacement label. Printing never saves an athlete, creates an athlete, or changes check-in status. Only a successful saved check-in enables the label flow.
 
 Print Label prints one portrait 4 × 6-inch label: large four-digit tryout number, preferred position exactly as recorded, then name. It uses black text on white, 0.25-inch internal padding, no site navigation or photo. The normal browser dialog remains available without the dedicated shortcut. Cancelling printing leaves check-in saved. The app cannot detect paper, jams, printer selection, cancellation or physical completion; “Print requested” is not a delivery confirmation. Reprinting is always possible.
 
@@ -48,7 +48,7 @@ Use the dedicated profile only for CourtSense. Silent printing applies to any pa
 - Edited number: save first, then replacement label uses the new saved number.
 - Printer off / Wi-Fi interruption: check-in remains saved; restore connectivity and inspect the Windows queue before reprinting to avoid duplicate queued labels.
 - Normal Setup shortcut: cancelling the print dialog keeps check-in saved.
-- Next Athlete returns to the correct event list.
+- Back to Check-in List returns to the correct event list.
 
 Use disposable test athletes for changes. Do not reset staff passwords or alter real registrations for printer testing.
 
@@ -62,7 +62,7 @@ All 14 existing regression tests passed, TypeScript and production build passed,
 
 Chromium checked the actual component's print CSS with normal, long and unbroken names: 384 × 576 CSS pixels (4 × 6 inches), no overflowing label content, hidden site controls, exactly one PDF page with a 288 × 432-point MediaBox. See [layout preview](qa/2026-10-05-label/layout-preview.png) and [sample PDF](qa/2026-10-05-label/sample-label.pdf). These contain synthetic data. This is layout validation, not a physical print or a full check-in interaction test.
 
-Full browser checks are prepared for saved/reopened check-in, duplicate-number rejection, printing/reprinting, failed print request, walk-in, mobile layout, and Next Athlete. The command policy blocked starting the isolated server on port 3107; those interaction checks require a manual server start and are not yet claimed as passing. The Rollo driver, saved printer destination, silent printing and physical label remain to be verified on the actual laptop.
+Full browser checks are prepared for saved/reopened check-in, duplicate-number rejection, printing/reprinting, failed print request, walk-in, mobile layout, and Back to Check-in List. The command policy blocked starting the isolated server on port 3107; those interaction checks require a manual server start and are not yet claimed as passing. The Rollo driver, saved printer destination, silent printing and physical label remain to be verified on the actual laptop.
 
 ## References
 
