@@ -4,7 +4,7 @@
 
 After successful check-in or walk-in creation, the app stays on a saved confirmation with Print Label and Back to Check-in List. Reopening a checked-in athlete shows the same controls; Edit check-in allows changes before saving a replacement label. Printing never saves an athlete, creates an athlete, or changes check-in status. Only a successful saved check-in enables the label flow.
 
-Print Label prints one portrait 4 × 6-inch label: large four-digit tryout number, preferred position exactly as recorded, then name. It uses black text on white, 0.25-inch internal padding, no site navigation or photo. The normal browser dialog remains available without the dedicated shortcut. Cancelling printing leaves check-in saved. The app cannot detect paper, jams, printer selection, cancellation or physical completion; “Print requested” is not a delivery confirmation. Reprinting is always possible.
+Print Label prints one landscape 6 × 4-inch label: a four-digit tryout number fitted to the available width, abbreviated position (S, OH, OPP, MB, L, DS), then name. It uses black text on white, 0.2-inch internal padding, no site navigation or photo. The normal browser dialog remains available without the dedicated shortcut. Cancelling printing leaves check-in saved. The app cannot detect paper, jams, printer selection, cancellation or physical completion; “Print requested” is not a delivery confirmation. Reprinting is always possible.
 
 No database migration, print service, new dependency or printer credential is required. Vercel hosts the app; the Windows laptop sends the print job through its installed printer. Do not put a printer's local IP address or Windows login into Vercel.
 
@@ -23,7 +23,7 @@ If the project is already cloned, fetch first and switch to that branch. Once me
 ## Configure the actual check-in laptop
 
 1. Connect the Windows laptop and Rollo to the same Wi-Fi network. Install the official Rollo Windows driver and add the wireless printer. Print Rollo's sample label first. If venue Wi-Fi isolates devices, use a staff network that allows printer discovery or the supplied USB cable.
-2. Load actual 4 × 6-inch direct thermal labels. Set the Rollo Windows printing preferences to 4 × 6 inches, portrait. Disable “Let Windows manage my default printer” if using Rollo as the default for this laptop, or retain another default and explicitly select Rollo in the dedicated browser profile. Do not change default printers on unrelated workstations.
+2. Load actual 4 × 6-inch direct thermal labels. Set the Rollo Windows printing preferences to 4 × 6-inch stock, landscape. Disable “Let Windows manage my default printer” if using Rollo as the default for this laptop, or retain another default and explicitly select Rollo in the dedicated browser profile. Do not change default printers on unrelated workstations.
 3. Install Chrome if needed. From the cloned project, run the reviewed shortcut script:
 
    ```powershell
@@ -32,7 +32,7 @@ If the project is already cloned, fetch first and switch to that branch. Once me
 
    The script only creates CourtSense Setup and CourtSense Check-in desktop shortcuts. Both use their own Chrome data directory under `%LOCALAPPDATA%\CourtSense\CheckInChrome`. It does not launch software, change Windows printer settings, or alter your normal Chrome profile. If execution policy blocks it, have Codex inspect the script and create the equivalent shortcuts manually; no machine-wide execution-policy change is required.
 
-4. Open **CourtSense Setup**, sign in with the staff account, and use a checked-in test athlete. Click Print Label. Select **Rollo**, **4 × 6-inch paper**, **portrait**, **one copy**, **100% scale**, **no margins**, and **headers/footers off**. Print and check the physical label. Chrome's available paper options depend on the installed driver.
+4. Open **CourtSense Setup**, sign in with the staff account, and use a checked-in test athlete. Click Print Label. Select **Rollo**, **4 × 6-inch paper**, **landscape**, **one copy**, **100% scale**, **no margins**, and **headers/footers off**. Print and check the physical label. Chrome's available paper options depend on the installed driver.
 5. Close every window opened by CourtSense Setup. Open **CourtSense Check-in**. Its `--kiosk-printing` flag automatically accepts print preview using the profile's current print settings. The flag only takes effect when a new Chrome process starts for this profile; a window already running in setup mode will prevent it taking effect.
 6. Click Print Label once on the same test athlete. Confirm one label comes out without another confirmation. Repeat after closing/reopening the shortcut and after a laptop restart. Always verify the selected destination after driver updates or printer changes; the app cannot enforce a printer destination.
 
